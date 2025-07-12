@@ -37,7 +37,6 @@ import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interfac
     },
   ],
   selector: 'ngx-mat-cron-select',
-  standalone: true,
   styleUrls: ['./ngx-mat-cron-select.component.scss'],
   templateUrl: './ngx-mat-cron-select.component.html',
 })
