@@ -11,6 +11,11 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "paths": {
+      "ngx-mat-cron-select": [
+        "./dist/ngx-mat-cron-select"
+      ]
+    },
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
