@@ -11,8 +11,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { MAT_TIMEPICKER_CONFIG, MatTimepickerModule } from '@angular/material/timepicker';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
 import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interface';
@@ -28,12 +30,18 @@ import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interfac
     MatOption,
     MatLabel,
     NgTemplateOutlet,
+    MatInput,
+    MatTimepickerModule,
   ],
   providers: [
     {
       multi: true,
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NgxMatCronSelectComponent),
+    },
+    {
+      provide: MAT_TIMEPICKER_CONFIG,
+      useValue: { interval: '60 minutes' },
     },
   ],
   selector: 'ngx-mat-cron-select',
@@ -42,8 +50,6 @@ import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interfac
 })
 export class NgxMatCronSelectComponent implements ControlValueAccessor {
   public initialTab = input<ECronSelectTab>(ECronSelectTab.week);
-  public hourSystem = input<12 | 24>(24);
-  public locale = input<string>('en-US');
   public inputsFormGroup = input(
     new FormGroup({
       dayOfMonth: new FormControl<number[] | null>(null, [Validators.required]),
@@ -148,21 +154,6 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   protected readonly minuteOptions = Array(60)
     .fill(null)
     .map((_, index) => index);
-  protected readonly hourOptions = computed(() => {
-    const formatter = new Intl.DateTimeFormat(this.locale(), {
-      hour: 'numeric',
-      hour12: this.hourSystem() === 12,
-    });
-
-    return Array.from({ length: 24 }, (_, hour) => {
-      const date = new Date(2000, 0, 1, hour);
-
-      return {
-        id: hour,
-        name: formatter.format(date),
-      };
-    });
-  });
 
   private isInitialized = false;
   private previousValue: string | null = null;
