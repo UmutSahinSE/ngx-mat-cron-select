@@ -8,6 +8,12 @@
 
   .hour-and-minute-container {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .hour-and-minute-container > * {
+    display: block;
+    min-width: 240px;
   }
 }

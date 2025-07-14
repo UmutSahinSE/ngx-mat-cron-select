@@ -1,6 +1,6 @@
 import { Component, computed, effect, Inject, OnDestroy, Optional, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatError, MatFormField, MatInput, MatLabel, MatSuffix } from '@angular/material/input';
@@ -49,7 +49,7 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsMultiSelectVa
   extends NmcsInput<FormControlValue>
   implements OnDestroy
 {
-  protected readonly dateControl = new FormControl<Date | null>(null);
+  protected readonly dateControl = new FormControl<Date | null>(null, [Validators.required]);
   private hourControlValueSubscription: Subscription | null = null;
   private hourControlStatusSubscription: Subscription | null = null;
   protected readonly hourOptions = computed(() => {
