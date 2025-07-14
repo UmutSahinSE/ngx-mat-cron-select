@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, forwardRef, input, output, Signal, signal } from '@angular/core';
+import { Component, computed, effect, forwardRef, input, InputSignal, output, Signal, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   ControlValueAccessor,
@@ -10,14 +10,26 @@ import {
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
-import { MatFormField, MatLabel } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
+import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { MAT_TIMEPICKER_CONFIG, MatTimepickerModule } from '@angular/material/timepicker';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
-import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interface';
+import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nmcs-hour-select.component';
+import { TNmcsValue } from '../input-components/nmcs-input.component';
+import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
+import { ECronSelectTab, IInputsFormGroupValue } from './ngx-mat-cron-select.interface';
+
+export interface IInputsFormGroup {
+  dayOfMonth: FormControl<TNmcsValue>;
+  dayOfWeek: FormControl<TNmcsValue>;
+  hour: FormControl<TNmcsValue>;
+  minute: FormControl<TNmcsValue>;
+  monthOfYear: FormControl<TNmcsValue>;
+}
+
+const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] as const;
 
 @Component({
   imports: [
@@ -30,18 +42,16 @@ import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interfac
     MatOption,
     MatLabel,
     NgTemplateOutlet,
-    MatInput,
     MatTimepickerModule,
+    MatFormFieldModule,
+    TranslateOrUseDefaultPipe,
+    NmcsHourSelectComponent,
   ],
   providers: [
     {
       multi: true,
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => NgxMatCronSelectComponent),
-    },
-    {
-      provide: MAT_TIMEPICKER_CONFIG,
-      useValue: { interval: '60 minutes' },
     },
   ],
   selector: 'ngx-mat-cron-select',
@@ -50,13 +60,13 @@ import { ECronSelectTab, IInputsFormGroup } from './ngx-mat-cron-select.interfac
 })
 export class NgxMatCronSelectComponent implements ControlValueAccessor {
   public initialTab = input<ECronSelectTab>(ECronSelectTab.week);
-  public inputsFormGroup = input(
-    new FormGroup({
-      dayOfMonth: new FormControl<number[] | null>(null, [Validators.required]),
-      dayOfWeek: new FormControl<number[] | null>(null, [Validators.required]),
-      hour: new FormControl<number[] | null>(null, [Validators.required]),
-      minute: new FormControl<number[] | null>(null, [Validators.required]),
-      monthOfYear: new FormControl<number[] | null>(null, [Validators.required]),
+  public inputsFormGroup: InputSignal<FormGroup<IInputsFormGroup>> = input(
+    new FormGroup<IInputsFormGroup>({
+      dayOfMonth: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
+      dayOfWeek: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
+      hour: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
+      minute: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
+      monthOfYear: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
     }),
   );
 
@@ -65,21 +75,22 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   private readonly onTouchAdapter: BehaviorSubject<Observable<boolean>> = new BehaviorSubject(
     new Observable<boolean>().pipe(startWith(false)),
   );
-  private readonly inputsFormGroupValueAdapter: BehaviorSubject<Observable<IInputsFormGroup>> = new BehaviorSubject(
-    new Observable<IInputsFormGroup>().pipe(startWith(this.inputsFormGroup().value as IInputsFormGroup)),
-  );
+  private readonly inputsFormGroupValueAdapter: BehaviorSubject<Observable<IInputsFormGroupValue>> =
+    new BehaviorSubject(
+      new Observable<IInputsFormGroupValue>().pipe(startWith(this.inputsFormGroup().value as IInputsFormGroupValue)),
+    );
 
-  public inputsFormGroupValue = toSignal(
+  public readonly inputsFormGroupValue = toSignal(
     this.inputsFormGroupValueAdapter.pipe(
       switchMap((valueObs) => valueObs),
       takeUntilDestroyed(),
     ),
-    { initialValue: this.inputsFormGroup().value as IInputsFormGroup },
+    { initialValue: this.inputsFormGroup().value as IInputsFormGroupValue },
   );
 
   protected readonly manuallySelectedTab = signal<ECronSelectTab | null>(null);
 
-  protected selectedTab: Signal<ECronSelectTab> = computed(() => {
+  protected readonly selectedTab: Signal<ECronSelectTab> = computed(() => {
     const value = this.inputCron();
     const manuallySelectedTab = this.manuallySelectedTab();
 
@@ -112,43 +123,28 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
     return isMonthUnspecified ? ECronSelectTab.month : ECronSelectTab.year;
   });
-
-  public value = computed(() => {
+  public readonly value = computed(() => {
     const formValues = this.inputsFormGroupValue();
 
-    switch (this.selectedTab()) {
-      case ECronSelectTab.hour:
-        return formValues.minute?.length ? `${formValues.minute.join(',')} * * * *` : null;
-      case ECronSelectTab.day:
-        return formValues.minute?.length && formValues.hour?.length
-          ? `${formValues.minute.join(',')} ${formValues.hour.join(',')} * * *`
-          : null;
-      case ECronSelectTab.week:
-        return formValues.minute?.length && formValues.hour?.length && formValues.dayOfWeek?.length
-          ? `${formValues.minute.join(',')} ${formValues.hour.join(',')} * * ${formValues.dayOfWeek.join(',')}`
-          : null;
-
-      case ECronSelectTab.month:
-        return formValues.minute?.length &&
-          formValues.hour?.length &&
-          formValues.dayOfWeek?.length &&
-          formValues.dayOfMonth?.length
-          ? `${formValues.minute.join(',')} ${formValues.hour.join(',')} ${formValues.dayOfMonth.join(',')} * ${formValues.dayOfWeek.join(',')}`
-          : null;
-
-      case ECronSelectTab.year:
-        return formValues.minute?.length &&
-          formValues.hour?.length &&
-          formValues.dayOfWeek?.length &&
-          formValues.dayOfMonth?.length &&
-          formValues.monthOfYear?.length
-          ? `${formValues.minute.join(',')} ${formValues.hour.join(',')} ${formValues.dayOfMonth.join(',')} ${formValues.monthOfYear.join(',')} ${formValues.dayOfWeek.join(',')}`
-          : null;
+    // TODO also check if empty
+    if (!this.inputsFormGroup().valid) {
+      return null;
     }
+
+    return this.getActiveInputsBasedOnActiveTab()
+      .map((isActive, index) => {
+        if (!isActive) {
+          return '*';
+        }
+
+        const fieldName = cronFields[index];
+
+        return Array.isArray(formValues[fieldName]) ? formValues[fieldName].join(',') : formValues[fieldName];
+      })
+      .join(' ');
   });
 
-  public isDisabled = signal(false);
-
+  public readonly isDisabled = signal(false);
   private readonly inputCron = signal<string>('');
 
   protected readonly minuteOptions = Array(60)
@@ -159,6 +155,74 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   private previousValue: string | null = null;
 
   constructor() {
+    this.registerInputFormControlEvents();
+    this.registerFormControlInitialization();
+    this.registerInputStatusBasedOnActiveTab();
+    this.registerOnChangeCall();
+
+    this.onTouchAdapter.pipe(switchMap((touchObs) => touchObs)).subscribe((isTouched) => {
+      if (isTouched) {
+        this.onTouched();
+      }
+    });
+  }
+
+  private onChange = (_value: string | null): void => {};
+  private onTouched = (): void => {};
+
+  public writeValue(value: string): void {
+    // TODO validate cron
+    // check single select form group vs value
+
+    this.manuallySelectedTab.set(null);
+    this.inputCron.set(value);
+  }
+
+  public registerOnChange(fn: any): void {
+    this.onChange = fn;
+  }
+
+  public registerOnTouched(fn: any): void {
+    this.onTouched = fn;
+  }
+
+  public setDisabledState(isDisabled: boolean): void {
+    // TODO use isDisabled
+    this.isDisabled.set(isDisabled);
+  }
+
+  private registerInputStatusBasedOnActiveTab(): void {
+    effect(() => {
+      for (const [index, isActive] of this.getActiveInputsBasedOnActiveTab().entries()) {
+        const fieldName = cronFields[index];
+
+        if (isActive) {
+          this.inputsFormGroup().controls[fieldName].enable();
+        } else {
+          this.inputsFormGroup().controls[fieldName].disable();
+        }
+      }
+    });
+  }
+
+  private registerInputFormControlEvents(): void {
+    effect(() => {
+      const inputsFormGroup = this.inputsFormGroup();
+      this.onTouchAdapter.next(
+        inputsFormGroup.events.pipe(
+          filter((controlEvent) => controlEvent instanceof TouchedChangeEvent),
+          map(({ touched }: TouchedChangeEvent) => touched),
+        ),
+      );
+      this.inputsFormGroupValueAdapter.next(
+        (inputsFormGroup.valueChanges as Observable<IInputsFormGroupValue>).pipe(
+          startWith(inputsFormGroup.value as IInputsFormGroupValue),
+        ),
+      );
+    });
+  }
+
+  private registerOnChangeCall(): void {
     effect(() => {
       const prevValue = this.previousValue;
       const newValue = this.value();
@@ -175,57 +239,48 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       // TODO prevent onchange from running on initialization
       this.onChange(newValue);
     });
+  }
 
+  private registerFormControlInitialization(): void {
     effect(() => {
-      const inputsFormGroup = this.inputsFormGroup();
-      this.onTouchAdapter.next(
-        inputsFormGroup.events.pipe(
-          filter((controlEvent) => controlEvent instanceof TouchedChangeEvent),
-          map(({ touched }: TouchedChangeEvent) => touched),
-        ),
-      );
-      this.inputsFormGroupValueAdapter.next(
-        (inputsFormGroup.valueChanges as Observable<IInputsFormGroup>).pipe(
-          startWith(inputsFormGroup.value as IInputsFormGroup),
-        ),
-      );
-    });
+      const value = this.inputCron();
+      const [minute, hour, dayOfMonth, monthOfYear, dayOfWeek] = value.split(' ');
 
-    this.onTouchAdapter.pipe(switchMap((touchObs) => touchObs)).subscribe((isTouched) => {
-      if (isTouched) {
-        this.onTouched();
-      }
+      this.inputsFormGroup().reset({
+        dayOfMonth:
+          dayOfMonth === '*' ? this.getEmptyInputValue('dayOfMonth') : this.getInputValue('dayOfMonth', dayOfMonth),
+        dayOfWeek:
+          dayOfWeek === '*' ? this.getEmptyInputValue('dayOfWeek') : this.getInputValue('dayOfWeek', dayOfWeek),
+        hour: hour === '*' ? this.getEmptyInputValue('hour') : this.getInputValue('hour', hour),
+        minute: minute === '*' ? this.getEmptyInputValue('minute') : this.getInputValue('minute', minute),
+        monthOfYear:
+          monthOfYear === '*' ? this.getEmptyInputValue('monthOfYear') : this.getInputValue('monthOfYear', monthOfYear),
+      });
     });
   }
 
-  private onChange = (_value: string | null): void => {};
-  private onTouched = (): void => {};
-
-  public writeValue(value: string): void {
-    // TODO validate cron
-    // minute can't be *
-    this.manuallySelectedTab.set(null);
-    this.inputCron.set(value);
-    const [minute, hour, dayOfMonth, monthOfYear, dayOfWeek] = value.split(' ');
-
-    this.inputsFormGroup().reset({
-      dayOfMonth: dayOfMonth === '*' ? null : dayOfMonth.split(',').map(Number),
-      dayOfWeek: dayOfWeek === '*' ? null : dayOfWeek.split(',').map(Number),
-      hour: hour === '*' ? null : hour.split(',').map(Number),
-      minute: minute.split(',').map(Number),
-      monthOfYear: monthOfYear === '*' ? null : monthOfYear.split(',').map(Number),
-    });
+  private getEmptyInputValue(inputName: keyof IInputsFormGroupValue): [] | null {
+    return Array.isArray(this.inputsFormGroup().value[inputName]) ? [] : null;
   }
 
-  public registerOnChange(fn: any): void {
-    this.onChange = fn;
+  private getInputValue(inputName: keyof IInputsFormGroupValue, stringValue: string): number | number[] {
+    return Array.isArray(this.inputsFormGroup().value[inputName])
+      ? stringValue.split(',').map(Number)
+      : Number(stringValue);
   }
 
-  public registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  public setDisabledState(isDisabled: boolean): void {
-    this.isDisabled.set(isDisabled);
+  private getActiveInputsBasedOnActiveTab(): [boolean, boolean, boolean, boolean, boolean] {
+    switch (this.selectedTab()) {
+      case ECronSelectTab.hour:
+        return [true, false, false, false, false];
+      case ECronSelectTab.day:
+        return [true, true, false, false, false];
+      case ECronSelectTab.week:
+        return [true, true, false, false, true];
+      case ECronSelectTab.month:
+        return [true, true, true, false, true];
+      case ECronSelectTab.year:
+        return [true, true, true, true, true];
+    }
   }
 }

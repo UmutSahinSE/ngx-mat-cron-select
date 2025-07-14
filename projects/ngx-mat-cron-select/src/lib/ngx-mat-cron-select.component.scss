@@ -1,5 +1,13 @@
-.vertical-flex-with-gap {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.ngx-mat-cron-select {
+  .vertical-flex-with-gap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .hour-and-minute-container {
+    display: flex;
+    gap: 10px;
+  }
 }

@@ -1,3 +1,5 @@
+import { TNmcsValue } from '../input-components/nmcs-input.component';
+
 export enum ECronSelectTab {
   hour = 0,
   day = 1,
@@ -6,10 +8,21 @@ export enum ECronSelectTab {
   year = 4,
 }
 
-export interface IInputsFormGroup {
-  dayOfMonth: number[] | null;
-  dayOfWeek: number[] | null;
-  hour: number[] | null;
-  minute: number[] | null;
-  monthOfYear: number[] | null;
+export interface IInputsFormGroupValue {
+  dayOfMonth: TNmcsValue;
+  dayOfWeek: TNmcsValue;
+  hour: TNmcsValue;
+  minute: TNmcsValue;
+  monthOfYear: TNmcsValue;
 }
+
+export const twelveHourLocales: readonly string[] = [
+  'en-US',
+  'en-AU',
+  'en-CA',
+  'en-NZ',
+  'en-PH',
+  'en-IN',
+  'es-MX',
+  'en-IE',
+] as const;
