@@ -24,6 +24,8 @@
     <mat-tab [label]="'ngxMatCronSelect.tabLabel.year' | translateOrUseDefault: 'Year'">
       <div class="vertical-flex-with-gap">
         <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+        <nmcs-day-of-week-select [formControl]="inputsFormGroup().controls.dayOfWeek"></nmcs-day-of-week-select>
+        <nmcs-month-of-year-select [formControl]="inputsFormGroup().controls.monthOfYear"></nmcs-month-of-year-select>
       </div>
     </mat-tab>
   </mat-tab-group>

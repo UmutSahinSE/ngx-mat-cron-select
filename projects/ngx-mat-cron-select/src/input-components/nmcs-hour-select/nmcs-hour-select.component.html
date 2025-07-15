@@ -1,6 +1,6 @@
 @if (isMultiselect()) {
   <mat-form-field>
-    <mat-label>{{ 'ngxMatCronSelect.hourSelectLabel' | translateOrUseDefault: 'Select hour' }}</mat-label>
+    <mat-label>{{ 'ngxMatCronSelect.hourSelectLabel' | translateOrUseDefault: 'Select hours' }}</mat-label>
     <mat-select [formControl]="formControl()" multiple>
       @for (hourOption of hourOptions(); track hourOption) {
         <mat-option [value]="hourOption.id">{{ hourOption.name }}</mat-option>

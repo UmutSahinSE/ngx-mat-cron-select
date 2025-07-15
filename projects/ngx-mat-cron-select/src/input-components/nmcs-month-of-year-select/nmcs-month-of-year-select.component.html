@@ -1,5 +1,5 @@
 <mat-form-field>
-  <mat-label>{{ 'ngxMatCronSelect.dayOfWeekSelectLabel' | translateOrUseDefault: 'Select days of week' }}</mat-label>
+  <mat-label>{{ 'ngxMatCronSelect.monthSelectLabel' | translateOrUseDefault: 'Select months' }}</mat-label>
   <mat-select [formControl]="formControl()" multiple>
     @for (option of options; track option) {
       <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>

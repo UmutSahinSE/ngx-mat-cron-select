@@ -21,6 +21,9 @@ import { TNmcsValue } from '../input-components/nmcs-input.component';
 import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
 import { ECronSelectTab, IInputsFormGroupValue } from './ngx-mat-cron-select.interface';
+import {
+  NmcsMonthOfYearSelectComponent
+} from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 
 export interface IInputsFormGroup {
   dayOfMonth: FormControl<TNmcsValue>;
@@ -45,6 +48,7 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
     NmcsHourSelectComponent,
     NmcsMinuteSelectComponent,
     NmcsDayOfWeekSelectComponent,
+    NmcsMonthOfYearSelectComponent,
   ],
   providers: [
     {
