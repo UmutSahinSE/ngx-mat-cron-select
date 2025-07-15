@@ -2,7 +2,7 @@
   <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="manuallySelectedTab.set($event)">
     <mat-tab [label]="'ngxMatCronSelect.tabLabel.hour' | translateOrUseDefault: 'Hour'">
       <div class="vertical-flex-with-gap">
-        <ng-template [ngTemplateOutlet]="minuteSelect"></ng-template>
+        <nmcs-minute-select [formControl]="inputsFormGroup().controls.minute"></nmcs-minute-select>
       </div>
     </mat-tab>
     <mat-tab [label]="'ngxMatCronSelect.tabLabel.day' | translateOrUseDefault: 'Day'">
@@ -28,21 +28,9 @@
   </mat-tab-group>
 </div>
 
-<ng-template #minuteSelect>
-  <mat-form-field>
-    <mat-label>{{ 'ngxMatCronSelect.minuteSelectLabel' | translateOrUseDefault: 'Select minutes' }}</mat-label>
-    <mat-select [formControl]="inputsFormGroup().controls.minute" multiple>
-      @for (minuteOption of minuteOptions; track minuteOption) {
-        <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
-      }
-    </mat-select>
-    <mat-error></mat-error>
-  </mat-form-field>
-</ng-template>
-
 <ng-template #hourAndMinuteSelect>
   <div class="hour-and-minute-container">
     <nmcs-hour-select [formControl]="inputsFormGroup().controls.hour"></nmcs-hour-select>
-    <ng-template [ngTemplateOutlet]="minuteSelect"></ng-template>
+    <nmcs-minute-select [formControl]="inputsFormGroup().controls.minute"></nmcs-minute-select>
   </div>
 </ng-template>

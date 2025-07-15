@@ -66,7 +66,9 @@ export abstract class NmcsInput<FormControlValue extends TNmcsValue> implements 
     // TODO validate
     // check single select form group vs value
 
-    this.formControl().reset(value);
+    if (this.formControl().value !== value) {
+      this.formControl().reset(value);
+    }
   }
 
   public registerOnChange(fn: any): void {

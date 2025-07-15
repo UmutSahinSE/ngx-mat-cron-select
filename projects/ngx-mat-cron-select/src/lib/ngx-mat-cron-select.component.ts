@@ -10,14 +10,14 @@ import {
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
-import { MatFormField, MatFormFieldModule, MatLabel } from '@angular/material/form-field';
-import { MatOption, MatSelect } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
 import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nmcs-hour-select.component';
 import { TNmcsValue } from '../input-components/nmcs-input.component';
+import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
 import { ECronSelectTab, IInputsFormGroupValue } from './ngx-mat-cron-select.interface';
 
@@ -36,16 +36,13 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
     MatTabGroup,
     MatTab,
     ReactiveFormsModule,
-    MatFormField,
-    MatSelect,
     TranslateModule,
-    MatOption,
-    MatLabel,
     NgTemplateOutlet,
     MatTimepickerModule,
     MatFormFieldModule,
     TranslateOrUseDefaultPipe,
     NmcsHourSelectComponent,
+    NmcsMinuteSelectComponent,
   ],
   providers: [
     {
@@ -146,10 +143,6 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   public readonly isDisabled = signal(false);
   private readonly inputCron = signal<string>('');
-
-  protected readonly minuteOptions = Array(60)
-    .fill(null)
-    .map((_, index) => index);
 
   private isInitialized = false;
   private previousValue: string | null = null;

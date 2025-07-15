@@ -1,1 +1,9 @@
-<p>nmcs-minute-select works!</p>
+<mat-form-field>
+  <mat-label>{{ 'ngxMatCronSelect.minuteSelectLabel' | translateOrUseDefault: 'Select minutes' }}</mat-label>
+  <mat-select [formControl]="formControl()" multiple>
+    @for (minuteOption of minuteOptions; track minuteOption) {
+      <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
+    }
+  </mat-select>
+  <mat-error></mat-error>
+</mat-form-field>

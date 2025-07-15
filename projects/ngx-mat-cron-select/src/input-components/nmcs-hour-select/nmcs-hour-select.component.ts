@@ -1,6 +1,6 @@
-import { Component, computed, effect, Inject, OnDestroy, Optional, Signal } from '@angular/core';
+import { Component, computed, effect, forwardRef, Inject, OnDestroy, Optional, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatError, MatFormField, MatInput, MatLabel, MatSuffix } from '@angular/material/input';
@@ -15,7 +15,7 @@ import { distinctUntilChanged, startWith, Subscription } from 'rxjs';
 import { twelveHourLocales } from '../../lib/ngx-mat-cron-select.interface';
 import { NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
-import { NmcsInput, TNmcsMultiSelectValue, TNmcsSingleSelectValue } from '../nmcs-input.component';
+import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
 
 @Component({
   imports: [
@@ -30,8 +30,6 @@ import { NmcsInput, TNmcsMultiSelectValue, TNmcsSingleSelectValue } from '../nmc
     MatTimepickerToggle,
     ReactiveFormsModule,
     TranslateOrUseDefaultPipe,
-    MatFormField,
-    MatError,
     MatFormFieldModule,
     MatSelect,
   ],
@@ -40,12 +38,17 @@ import { NmcsInput, TNmcsMultiSelectValue, TNmcsSingleSelectValue } from '../nmc
       provide: MAT_TIMEPICKER_CONFIG,
       useValue: { interval: '60 minutes' },
     },
+    {
+      multi: true,
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => NmcsHourSelectComponent),
+    },
   ],
   selector: 'nmcs-hour-select',
   styleUrl: './nmcs-hour-select.component.scss',
   templateUrl: './nmcs-hour-select.component.html',
 })
-export class NmcsHourSelectComponent<FormControlValue extends TNmcsMultiSelectValue | TNmcsSingleSelectValue>
+export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue>
   extends NmcsInput<FormControlValue>
   implements OnDestroy
 {
@@ -83,8 +86,8 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsMultiSelectVa
 
   private registerHourToDateValueSync(): void {
     effect(() => {
-      this.hourControlValueSubscription?.unsubscribe();
       const formControl = this.formControl();
+      this.hourControlValueSubscription?.unsubscribe();
       this.hourControlValueSubscription = formControl.valueChanges
         .pipe(startWith(formControl.value), distinctUntilChanged())
         .subscribe((hour) => {
