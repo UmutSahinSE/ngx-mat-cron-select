@@ -6,14 +6,14 @@
     padding: 10px;
   }
 
-  .hour-and-minute-container {
+  .side-by-side-container {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
   }
 
-  .hour-and-minute-container > * {
+  .fixed-width-select {
     display: block;
-    min-width: 240px;
+    width: 240px;
   }
 }

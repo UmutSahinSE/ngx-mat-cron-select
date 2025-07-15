@@ -1,5 +1,16 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, forwardRef, input, InputSignal, output, Signal, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  forwardRef,
+  inject,
+  input,
+  InputSignal,
+  output,
+  Signal,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import {
   ControlValueAccessor,
@@ -10,20 +21,20 @@ import {
   TouchedChangeEvent,
   Validators,
 } from '@angular/forms';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
+import { NmcsDayOfMonthSelectComponent } from '../input-components/nmcs-day-of-month-select/nmcs-day-of-month-select.component';
 import { NmcsDayOfWeekSelectComponent } from '../input-components/nmcs-day-of-week-select/nmcs-day-of-week-select.component';
 import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nmcs-hour-select.component';
 import { TNmcsValue } from '../input-components/nmcs-input.component';
 import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
+import { NmcsMonthOfYearSelectComponent } from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
 import { ECronSelectTab, IInputsFormGroupValue } from './ngx-mat-cron-select.interface';
-import {
-  NmcsMonthOfYearSelectComponent
-} from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 
 export interface IInputsFormGroup {
   dayOfMonth: FormControl<TNmcsValue>;
@@ -49,6 +60,7 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
     NmcsMinuteSelectComponent,
     NmcsDayOfWeekSelectComponent,
     NmcsMonthOfYearSelectComponent,
+    NmcsDayOfMonthSelectComponent,
   ],
   providers: [
     {
@@ -62,6 +74,8 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
   templateUrl: './ngx-mat-cron-select.component.html',
 })
 export class NgxMatCronSelectComponent implements ControlValueAccessor {
+  private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
+
   public initialTab = input<ECronSelectTab>(ECronSelectTab.week);
   public inputsFormGroup: InputSignal<FormGroup<IInputsFormGroup>> = input(
     new FormGroup<IInputsFormGroup>({
@@ -126,6 +140,8 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
     return isMonthUnspecified ? ECronSelectTab.month : ECronSelectTab.year;
   });
+
+  protected readonly monthAndDayOrder: ('day' | 'month')[] = this.getMonthAndDayOrder();
   public readonly value = computed(() => {
     const formValues = this.inputsFormGroupValue();
 
@@ -277,9 +293,20 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       case ECronSelectTab.week:
         return [true, true, false, false, true];
       case ECronSelectTab.month:
-        return [true, true, true, false, true];
+        return [true, true, true, false, false];
       case ECronSelectTab.year:
-        return [true, true, true, true, true];
+        return [true, true, true, true, false];
     }
+  }
+
+  private getMonthAndDayOrder(): ('month' | 'day')[] {
+    const locale = this.matDateLocale ?? 'en-US';
+    const parts = new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).formatToParts(new Date(2020, 11, 31));
+
+    return parts.filter((part) => ['day', 'month'].includes(part.type)).map((part) => part.type as 'day' | 'month');
   }
 }

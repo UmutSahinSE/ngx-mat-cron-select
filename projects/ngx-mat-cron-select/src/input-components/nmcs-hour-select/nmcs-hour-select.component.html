@@ -1,19 +1,21 @@
-@if (isMultiselect()) {
-  <mat-form-field>
-    <mat-label>{{ 'ngxMatCronSelect.hourSelectLabel' | translateOrUseDefault: 'Select hours' }}</mat-label>
-    <mat-select [formControl]="formControl()" multiple>
-      @for (hourOption of hourOptions(); track hourOption) {
-        <mat-option [value]="hourOption.id">{{ hourOption.name }}</mat-option>
-      }
-    </mat-select>
-    <mat-error></mat-error>
-  </mat-form-field>
-} @else {
-  <mat-form-field>
-    <mat-label>{{ 'ngxMatCronSelect.hourSelectLabel' | translateOrUseDefault: 'Select hour' }}</mat-label>
-    <input matInput [formControl]="dateControl" [matTimepicker]="picker" />
-    <mat-timepicker-toggle matIconSuffix [for]="picker" />
-    <mat-timepicker #picker />
-    <mat-error></mat-error>
-  </mat-form-field>
-}
+<div class="nmcs-hour-select">
+  @if (isMultiselect()) {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'ngxMatCronSelect.hourSelectLabel' | translateOrUseDefault: 'Select hours' }}</mat-label>
+      <mat-select [formControl]="formControl()" multiple>
+        @for (hourOption of hourOptions(); track hourOption) {
+          <mat-option [value]="hourOption.id">{{ hourOption.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-error></mat-error>
+    </mat-form-field>
+  } @else {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'ngxMatCronSelect.hourSelectLabel' | translateOrUseDefault: 'Select hour' }}</mat-label>
+      <input matInput [formControl]="dateControl" [matTimepicker]="picker" />
+      <mat-timepicker-toggle matIconSuffix [for]="picker" />
+      <mat-timepicker #picker />
+      <mat-error></mat-error>
+    </mat-form-field>
+  }
+</div>
