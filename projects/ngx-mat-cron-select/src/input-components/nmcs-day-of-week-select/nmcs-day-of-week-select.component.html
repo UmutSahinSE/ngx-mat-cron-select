@@ -1,1 +1,9 @@
-<p>nmcs-day-of-week-select works!</p>
+<mat-form-field>
+  <mat-label>{{ 'ngxMatCronSelect.minuteSelectLabel' | translateOrUseDefault: 'Select minutes' }}</mat-label>
+  <mat-select [formControl]="formControl()" multiple>
+    @for (option of options; track option) {
+      <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>
+    }
+  </mat-select>
+  <mat-error></mat-error>
+</mat-form-field>

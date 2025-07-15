@@ -15,6 +15,7 @@ import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
+import { NmcsDayOfWeekSelectComponent } from '../input-components/nmcs-day-of-week-select/nmcs-day-of-week-select.component';
 import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nmcs-hour-select.component';
 import { TNmcsValue } from '../input-components/nmcs-input.component';
 import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
@@ -43,6 +44,7 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
     TranslateOrUseDefaultPipe,
     NmcsHourSelectComponent,
     NmcsMinuteSelectComponent,
+    NmcsDayOfWeekSelectComponent,
   ],
   providers: [
     {

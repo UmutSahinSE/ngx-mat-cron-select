@@ -1,4 +1,4 @@
-import { Component, computed, effect, forwardRef, Inject, OnDestroy, Optional, Signal } from '@angular/core';
+import { Component, computed, effect, forwardRef, inject, OnDestroy, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
@@ -52,6 +52,9 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue>
   extends NmcsInput<FormControlValue>
   implements OnDestroy
 {
+  private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
+  private readonly isTwelveHour = inject<Signal<boolean>>(NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR, { optional: true });
+
   protected readonly dateControl = new FormControl<Date | null>(null, [Validators.required]);
   private hourControlValueSubscription: Subscription | null = null;
   private hourControlStatusSubscription: Subscription | null = null;
@@ -73,10 +76,7 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue>
     });
   });
 
-  constructor(
-    @Optional() @Inject(MAT_DATE_LOCALE) private matDateLocale: string,
-    @Optional() @Inject(NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR) private isTwelveHour: Signal<boolean> | undefined,
-  ) {
+  constructor() {
     super();
 
     this.registerHourToDateValueSync();

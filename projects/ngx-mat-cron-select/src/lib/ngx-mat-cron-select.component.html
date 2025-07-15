@@ -13,6 +13,7 @@
     <mat-tab [label]="'ngxMatCronSelect.tabLabel.week' | translateOrUseDefault: 'Week'">
       <div class="vertical-flex-with-gap">
         <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+        <nmcs-day-of-week-select [formControl]="inputsFormGroup().controls.dayOfWeek"></nmcs-day-of-week-select>
       </div>
     </mat-tab>
     <mat-tab [label]="'ngxMatCronSelect.tabLabel.month' | translateOrUseDefault: 'Month'">
