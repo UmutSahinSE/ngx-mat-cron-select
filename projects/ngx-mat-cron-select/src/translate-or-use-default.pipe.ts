@@ -1,13 +1,34 @@
 import { inject, Pipe, PipeTransform } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { map, Observable, of, startWith } from 'rxjs';
+import { NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE } from './tokens';
+import { INMCSTranslations } from './utilities';
+
+const noTranslationValues: INMCSTranslations = {
+  dayOfMonthSelectLabel: 'Select days',
+  dayOfWeekSelectLabel: 'Select days of week',
+  hourSelectLabel: 'Select hours',
+  minuteSelectLabel: 'Select minutes',
+  monthSelectLabel: 'Select months',
+  tabLabelDay: 'Hour',
+  tabLabelHour: 'Day',
+  tabLabelMonth: 'Week',
+  tabLabelWeek: 'Month',
+  tabLabelYear: 'Year',
+};
 
 @Pipe({ name: 'translateOrUseDefault' })
 export class TranslateOrUseDefaultPipe implements PipeTransform {
-  private readonly translate = inject(TranslateService, { optional: true });
+  private readonly translate = inject(NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE, { optional: true });
 
-  public transform(key: string, defaultValue: string, interpolateParams?: Object): string {
-    const translation = this.translate?.instant(key, interpolateParams) ?? defaultValue;
+  public transform(key: keyof INMCSTranslations): Observable<string> {
+    const [_, noTranslationKey] = key.split('.') as [string, keyof INMCSTranslations];
+    const defaultTranslation = noTranslationValues[noTranslationKey];
 
-    return translation === key ? defaultValue : translation;
+    return this.translate
+      ? this.translate.stream(`ngxMatCronSelect.${key}`).pipe(
+          map((res) => (res === key ? defaultTranslation : res)),
+          startWith(defaultTranslation),
+        )
+      : of(defaultTranslation);
   }
 }

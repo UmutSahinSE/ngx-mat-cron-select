@@ -1,4 +1,4 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
 import {
   Component,
   computed,
@@ -25,7 +25,6 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import { TranslateModule } from '@ngx-translate/core';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
 import { NmcsDayOfMonthSelectComponent } from '../input-components/nmcs-day-of-month-select/nmcs-day-of-month-select.component';
 import { NmcsDayOfWeekSelectComponent } from '../input-components/nmcs-day-of-week-select/nmcs-day-of-week-select.component';
@@ -51,7 +50,6 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
     MatTabGroup,
     MatTab,
     ReactiveFormsModule,
-    TranslateModule,
     NgTemplateOutlet,
     MatTimepickerModule,
     MatFormFieldModule,
@@ -61,6 +59,7 @@ const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] 
     NmcsDayOfWeekSelectComponent,
     NmcsMonthOfYearSelectComponent,
     NmcsDayOfMonthSelectComponent,
+    AsyncPipe,
   ],
   providers: [
     {

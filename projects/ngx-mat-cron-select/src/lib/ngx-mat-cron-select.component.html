@@ -1,6 +1,6 @@
 <div class="ngx-mat-cron-select">
   <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="manuallySelectedTab.set($event)">
-    <mat-tab [label]="'ngxMatCronSelect.tabLabel.hour' | translateOrUseDefault: 'Hour'">
+    <mat-tab [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
       <div class="vertical-flex-with-gap">
         <nmcs-minute-select
           class="fixed-width-select"
@@ -8,12 +8,12 @@
         ></nmcs-minute-select>
       </div>
     </mat-tab>
-    <mat-tab [label]="'ngxMatCronSelect.tabLabel.day' | translateOrUseDefault: 'Day'">
+    <mat-tab [label]="('tabLabelDay' | translateOrUseDefault | async) ?? ''">
       <div class="vertical-flex-with-gap">
         <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
       </div>
     </mat-tab>
-    <mat-tab [label]="'ngxMatCronSelect.tabLabel.week' | translateOrUseDefault: 'Week'">
+    <mat-tab [label]="('tabLabelWeek' | translateOrUseDefault | async) ?? ''">
       <div class="vertical-flex-with-gap">
         <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
         <nmcs-day-of-week-select
@@ -22,7 +22,7 @@
         ></nmcs-day-of-week-select>
       </div>
     </mat-tab>
-    <mat-tab [label]="'ngxMatCronSelect.tabLabel.month' | translateOrUseDefault: 'Month'">
+    <mat-tab [label]="('tabLabelMonth' | translateOrUseDefault | async) ?? ''">
       <div class="vertical-flex-with-gap">
         <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
         <nmcs-day-of-month-select
@@ -31,7 +31,7 @@
         ></nmcs-day-of-month-select>
       </div>
     </mat-tab>
-    <mat-tab [label]="'ngxMatCronSelect.tabLabel.year' | translateOrUseDefault: 'Year'">
+    <mat-tab [label]="('tabLabelYear' | translateOrUseDefault | async) ?? ''">
       <div class="vertical-flex-with-gap">
         <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
         <div class="side-by-side-container">

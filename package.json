@@ -16,8 +16,6 @@
     "@angular/platform-browser": "^19.2.14",
     "@angular/platform-browser-dynamic": "^19.2.14",
     "@angular/router": "^19.2.14",
-    "@ngx-translate/core": "^15.0.0",
-    "@ngx-translate/http-loader": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "weekstart": "^2.0.0",

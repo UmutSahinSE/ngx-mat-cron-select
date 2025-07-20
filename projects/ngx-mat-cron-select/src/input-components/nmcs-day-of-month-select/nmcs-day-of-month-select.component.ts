@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -7,7 +8,16 @@ import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
 
 @Component({
-  imports: [MatError, MatFormField, MatLabel, MatOption, MatSelect, TranslateOrUseDefaultPipe, ReactiveFormsModule],
+  imports: [
+    MatError,
+    MatFormField,
+    MatLabel,
+    MatOption,
+    MatSelect,
+    TranslateOrUseDefaultPipe,
+    ReactiveFormsModule,
+    AsyncPipe,
+  ],
   providers: [
     {
       multi: true,

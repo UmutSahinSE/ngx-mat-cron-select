@@ -16,6 +16,7 @@ import { twelveHourLocales } from '../../lib/ngx-mat-cron-select.interface';
 import { NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   imports: [
@@ -32,6 +33,7 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
     TranslateOrUseDefaultPipe,
     MatFormFieldModule,
     MatSelect,
+    AsyncPipe,
   ],
   providers: [
     {

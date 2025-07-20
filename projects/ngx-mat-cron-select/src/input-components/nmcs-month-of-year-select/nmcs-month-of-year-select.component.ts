@@ -6,9 +6,10 @@ import { MatSelect } from '@angular/material/select';
 import { NGX_MAT_CRON_SELECT_WEEK_FORMAT } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
-  imports: [MatFormField, TranslateOrUseDefaultPipe, ReactiveFormsModule, MatSelect, MatLabel, MatOption, MatError],
+  imports: [MatFormField, TranslateOrUseDefaultPipe, ReactiveFormsModule, MatSelect, MatLabel, MatOption, MatError, AsyncPipe],
   providers: [
     {
       multi: true,

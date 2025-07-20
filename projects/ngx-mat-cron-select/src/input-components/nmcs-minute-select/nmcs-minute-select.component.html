@@ -1,6 +1,6 @@
 <div class="nmcs-minute-select">
   <mat-form-field subscriptSizing="dynamic">
-    <mat-label>{{ 'ngxMatCronSelect.minuteSelectLabel' | translateOrUseDefault: 'Select minutes' }}</mat-label>
+    <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
     <mat-select [formControl]="formControl()" [multiple]="isMultiselect()">
       @for (minuteOption of minuteOptions; track minuteOption) {
         <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>

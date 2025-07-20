@@ -1,6 +1,6 @@
 <div class="nmcs-day-of-month-select">
   <mat-form-field subscriptSizing="dynamic">
-    <mat-label>{{ 'ngxMatCronSelect.dayOfMonthSelectLabel' | translateOrUseDefault: 'Select days' }}</mat-label>
+    <mat-label>{{ 'dayOfMonthSelectLabel' | translateOrUseDefault | async }}</mat-label>
     <mat-select [formControl]="formControl()" [multiple]="isMultiselect()">
       @for (option of options; track option) {
         <mat-option [value]="option">{{ option }}</mat-option>
