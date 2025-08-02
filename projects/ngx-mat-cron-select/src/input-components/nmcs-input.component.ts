@@ -1,4 +1,5 @@
 import { computed, Directive, effect, forwardRef, input, InputSignal, output, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, TouchedChangeEvent, Validators } from '@angular/forms';
 import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
 
@@ -39,27 +40,39 @@ export abstract class NmcsInput<FormControlValue extends TNmcsValue> implements 
   protected constructor() {
     this.registerInputFormControlEvents();
 
-    this.onTouchAdapter.pipe(switchMap((touchObs) => touchObs)).subscribe((isTouched) => {
-      if (isTouched) {
-        this.onTouched();
-      }
-    });
+    this.onTouchAdapter
+      .pipe(
+        takeUntilDestroyed(),
+        switchMap((touchObs) => touchObs),
+        takeUntilDestroyed(),
+      )
+      .subscribe((isTouched) => {
+        if (isTouched) {
+          this.onTouched();
+        }
+      });
 
-    this.inputsFormGroupValueAdapter.pipe(switchMap((value) => value)).subscribe((newValue: FormControlValue) => {
-      const prevValue = this.previousValue;
+    this.inputsFormGroupValueAdapter
+      .pipe(
+        takeUntilDestroyed(),
+        switchMap((value) => value),
+        takeUntilDestroyed(),
+      )
+      .subscribe((newValue: FormControlValue) => {
+        const prevValue = this.previousValue;
 
-      if (!this.isInitialized || prevValue === newValue) {
-        this.isInitialized = true;
+        if (!this.isInitialized || prevValue === newValue) {
+          this.isInitialized = true;
 
-        return;
-      }
+          return;
+        }
 
-      this.previousValue = newValue;
-      this.valueChange.emit(newValue);
+        this.previousValue = newValue;
+        this.valueChange.emit(newValue);
 
-      // TODO prevent onchange from running on initialization
-      this.onChange(newValue);
-    });
+        // TODO prevent onchange from running on initialization
+        this.onChange(newValue);
+      });
   }
 
   public writeValue(value: FormControlValue): void {
