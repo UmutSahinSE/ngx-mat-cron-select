@@ -112,6 +112,8 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     monthOfYear: true,
   });
 
+  public readonly isDisabled = input<boolean>(false);
+
   public readonly valueChange = output<string | null>();
 
   private readonly onTouchAdapter: BehaviorSubject<Observable<boolean>> = new BehaviorSubject(
@@ -183,7 +185,6 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       .join(' ');
   });
 
-  public readonly isDisabled = signal(false);
   private readonly inputCron = signal<string | null>(null);
 
   private isInitialized = false;
@@ -196,7 +197,6 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     this.registerEveryCheckboxStatusBasedOnActiveTab();
     this.registerDisableOrEnableInputs();
     this.registerOnChangeCall();
-
     this.onTouchAdapter.pipe(switchMap((touchObs) => touchObs)).subscribe((isTouched) => {
       if (isTouched) {
         this.onTouched();
@@ -224,16 +224,17 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
-  public setDisabledState(isDisabled: boolean): void {
-    // TODO use isDisabled
-    this.isDisabled.set(isDisabled);
-  }
-
   private registerEveryCheckboxStatusBasedOnActiveTab(): void {
     effect(() => {
       for (const [index, isActive] of this.getActiveEveryCheckboxesBasedOnActiveTab().entries()) {
         const fieldName = everyDropdownFields[index];
         const everyCheckboxesControl = this.everyCheckboxesFormGroup().controls[fieldName];
+
+        if (this.isDisabled()) {
+          everyCheckboxesControl.disable();
+
+          continue;
+        }
 
         if (!this.everyCheckboxesVisibility()[everyDropdownFields[index]]) {
           everyCheckboxesControl.reset(false);
@@ -287,7 +288,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
         const fieldName = cronFields[index];
         const inputsControl = this.inputsFormGroup().controls[fieldName];
 
-        if (!isActive) {
+        if (!isActive || this.isDisabled()) {
           inputsControl.disable();
 
           continue;

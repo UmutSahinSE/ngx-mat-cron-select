@@ -1,6 +1,6 @@
 <div class="ngx-mat-cron-select">
   <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="manuallySelectedTab.set($event)">
-    <mat-tab [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
+    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
       @if (selectedTab() === ECronSelectTab.hour) {
         <div class="vertical-flex-with-gap">
           <nmcs-minute-select
@@ -12,14 +12,14 @@
         </div>
       }
     </mat-tab>
-    <mat-tab [label]="('tabLabelDay' | translateOrUseDefault | async) ?? ''">
+    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelDay' | translateOrUseDefault | async) ?? ''">
       @if (selectedTab() === ECronSelectTab.day) {
         <div class="vertical-flex-with-gap">
           <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
         </div>
       }
     </mat-tab>
-    <mat-tab [label]="('tabLabelWeek' | translateOrUseDefault | async) ?? ''">
+    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelWeek' | translateOrUseDefault | async) ?? ''">
       @if (selectedTab() === ECronSelectTab.week) {
         <div class="vertical-flex-with-gap">
           <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
@@ -32,7 +32,7 @@
         </div>
       }
     </mat-tab>
-    <mat-tab [label]="('tabLabelMonth' | translateOrUseDefault | async) ?? ''">
+    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelMonth' | translateOrUseDefault | async) ?? ''">
       @if (selectedTab() === ECronSelectTab.month) {
         <div class="vertical-flex-with-gap">
           <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
@@ -45,7 +45,7 @@
         </div>
       }
     </mat-tab>
-    <mat-tab [label]="('tabLabelYear' | translateOrUseDefault | async) ?? ''">
+    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelYear' | translateOrUseDefault | async) ?? ''">
       @if (selectedTab() === ECronSelectTab.year) {
         <div class="vertical-flex-with-gap">
           <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
