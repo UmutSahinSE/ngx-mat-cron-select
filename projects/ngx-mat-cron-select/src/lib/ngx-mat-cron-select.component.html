@@ -26,6 +26,8 @@
           <nmcs-day-of-week-select
             class="fixed-width-select"
             [formControl]="inputsFormGroup().controls.dayOfWeek"
+            [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
+            [isEveryDayCheckboxVisible]="true"
           ></nmcs-day-of-week-select>
         </div>
       }
@@ -37,6 +39,8 @@
           <nmcs-day-of-month-select
             class="fixed-width-select"
             [formControl]="inputsFormGroup().controls.dayOfMonth"
+            [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
+            [isEveryDayCheckboxVisible]="true"
           ></nmcs-day-of-month-select>
         </div>
       }
@@ -51,11 +55,15 @@
                 <nmcs-day-of-month-select
                   class="fixed-width-select"
                   [formControl]="inputsFormGroup().controls.dayOfMonth"
+                  [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
+                  [isEveryDayCheckboxVisible]="true"
                 ></nmcs-day-of-month-select>
               } @else {
                 <nmcs-month-of-year-select
                   class="fixed-width-select"
                   [formControl]="inputsFormGroup().controls.monthOfYear"
+                  [everyMonthFormControl]="everyCheckboxesFormGroup().controls.monthOfYear"
+                  [isEveryMonthCheckboxVisible]="true"
                 ></nmcs-month-of-year-select>
               }
             }
@@ -68,7 +76,12 @@
 
 <ng-template #hourAndMinuteSelect>
   <div class="side-by-side-container">
-    <nmcs-hour-select class="fixed-width-select" [formControl]="inputsFormGroup().controls.hour"></nmcs-hour-select>
+    <nmcs-hour-select
+      class="fixed-width-select"
+      [formControl]="inputsFormGroup().controls.hour"
+      [everyHourFormControl]="everyCheckboxesFormGroup().controls.hour"
+      [isEveryHourCheckboxVisible]="true"
+    ></nmcs-hour-select>
     <nmcs-minute-select
       class="fixed-width-select"
       [formControl]="inputsFormGroup().controls.minute"

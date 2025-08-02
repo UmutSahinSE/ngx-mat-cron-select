@@ -1,3 +1,5 @@
+@let everyHourControl = everyHourFormControl();
+
 <div class="nmcs-hour-select">
   @if (isMultiselect()) {
     <mat-form-field subscriptSizing="dynamic">
@@ -17,5 +19,13 @@
       <mat-timepicker #picker />
       <mat-error></mat-error>
     </mat-form-field>
+  }
+
+  @if (isEveryHourCheckboxVisible() && everyHourControl) {
+    <section>
+      <mat-checkbox [formControl]="everyHourControl">{{
+        'everyHourLabel' | translateOrUseDefault | async
+      }}</mat-checkbox>
+    </section>
   }
 </div>

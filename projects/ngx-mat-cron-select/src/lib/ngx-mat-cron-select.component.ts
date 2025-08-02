@@ -40,7 +40,19 @@ import {
   IInputsFormGroupValue,
 } from './ngx-mat-cron-select.interface';
 
-const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] as const;
+const cronFields = [
+  'minute',
+  'hour',
+  'dayOfMonth',
+  'monthOfYear',
+  'dayOfWeek',
+] as const satisfies (keyof IInputsFormGroupValue)[number][];
+const everyDropdownFields = [
+  'minute',
+  'hour',
+  'day',
+  'monthOfYear',
+] as const satisfies (keyof IEveryCheckboxesFormGroupValue)[number][];
 
 @Component({
   imports: [
@@ -85,8 +97,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   public everyCheckboxesFormGroup: InputSignal<FormGroup<IEveryCheckboxesFormGroup>> = input(
     new FormGroup<IEveryCheckboxesFormGroup>({
-      dayOfMonth: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
-      dayOfWeek: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
+      day: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
       hour: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
       minute: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
       monthOfYear: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
@@ -177,7 +188,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
         return Array.isArray(formValues[fieldName])
           ? formValues[fieldName].join(',')
-          : this.everyCheckboxesFormGroupValue()[fieldName]
+          : this.everyCheckboxesFormGroupValue()[this.getCheckboxName(fieldName)]
             ? '*'
             : formValues[fieldName];
       })
@@ -194,7 +205,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   constructor() {
     this.registerInputFormControlEvents();
     this.registerFormControlInitialization();
-    this.registerInputStatusBasedOnActiveTab();
+    this.registerEveryCheckboxStatusBasedOnActiveTab();
     this.registerDisableOrEnableInputs();
     this.registerOnChangeCall();
 
@@ -205,7 +216,9 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private onChange = (_value: string | null): void => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private onTouched = (): void => {};
 
   public writeValue(value: string): void {
@@ -229,16 +242,14 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     this.isDisabled.set(isDisabled);
   }
 
-  private registerInputStatusBasedOnActiveTab(): void {
+  private registerEveryCheckboxStatusBasedOnActiveTab(): void {
     effect(() => {
-      for (const [index, isActive] of this.getActiveInputsBasedOnActiveTab().entries()) {
-        const fieldName = cronFields[index];
+      for (const [index, isActive] of this.getActiveEveryCheckboxesBasedOnActiveTab().entries()) {
+        const fieldName = everyDropdownFields[index];
         const everyCheckboxesControl = this.everyCheckboxesFormGroup().controls[fieldName];
-        const inputsControl = this.inputsFormGroup().controls[fieldName];
 
         if (!isActive) {
           everyCheckboxesControl.disable();
-          inputsControl.disable();
 
           continue;
         }
@@ -286,7 +297,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
         const fieldName = cronFields[index];
         const inputsControl = this.inputsFormGroup().controls[fieldName];
 
-        if (this.everyCheckboxesFormGroupValue()[fieldName]) {
+        if (this.everyCheckboxesFormGroupValue()[this.getCheckboxName(fieldName)]) {
           inputsControl.disable();
         } else {
           inputsControl.enable();
@@ -357,6 +368,21 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     }
   }
 
+  private getActiveEveryCheckboxesBasedOnActiveTab(): [boolean, boolean, boolean, boolean] {
+    switch (this.selectedTab()) {
+      case ECronSelectTab.hour:
+        return [true, false, false, false];
+      case ECronSelectTab.day:
+        return [true, true, false, false];
+      case ECronSelectTab.week:
+        return [true, true, true, false];
+      case ECronSelectTab.month:
+        return [true, true, true, false];
+      case ECronSelectTab.year:
+        return [true, true, true, true];
+    }
+  }
+
   private getMonthAndDayOrder(): ('month' | 'day')[] {
     const locale = this.matDateLocale ?? 'en-US';
     const parts = new Intl.DateTimeFormat(locale, {
@@ -366,5 +392,9 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     }).formatToParts(new Date(2020, 11, 31));
 
     return parts.filter((part) => ['day', 'month'].includes(part.type)).map((part) => part.type as 'day' | 'month');
+  }
+
+  private getCheckboxName(fieldName: (typeof cronFields)[number]): keyof IEveryCheckboxesFormGroupValue {
+    return fieldName === 'dayOfMonth' || fieldName === 'dayOfWeek' ? 'day' : fieldName;
   }
 }

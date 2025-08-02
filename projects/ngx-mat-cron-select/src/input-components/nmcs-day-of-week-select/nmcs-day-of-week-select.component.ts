@@ -1,6 +1,7 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, forwardRef, inject } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, forwardRef, inject, input } from '@angular/core';
+import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatError, MatFormField, MatLabel } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
@@ -19,6 +20,7 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
     MatOption,
     MatError,
     AsyncPipe,
+    MatCheckbox,
   ],
   providers: [
     {
@@ -34,6 +36,10 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
 export class NmcsDayOfWeekSelectComponent<FormControlValue extends TNmcsValue> extends NmcsInput<FormControlValue> {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
   private readonly weekFormat = inject(NGX_MAT_CRON_SELECT_WEEK_FORMAT, { optional: true });
+
+  public readonly everyDayFormControl = input.required<FormControl<boolean> | null>();
+  public readonly isEveryDayCheckboxVisible = input.required<boolean>();
+
   protected readonly options = this.prepareOrderedOptions();
 
   constructor() {

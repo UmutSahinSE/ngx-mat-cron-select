@@ -1,15 +1,25 @@
-import { Component, forwardRef, inject } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { AsyncPipe } from '@angular/common';
+import { Component, forwardRef, inject, input } from '@angular/core';
+import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
-import { MatError, MatFormField, MatLabel } from '@angular/material/input';
+import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { NGX_MAT_CRON_SELECT_WEEK_FORMAT } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
-  imports: [MatFormField, TranslateOrUseDefaultPipe, ReactiveFormsModule, MatSelect, MatLabel, MatOption, MatError, AsyncPipe],
+  imports: [
+    MatFormField,
+    TranslateOrUseDefaultPipe,
+    ReactiveFormsModule,
+    MatSelect,
+    MatLabel,
+    MatOption,
+    AsyncPipe,
+    MatCheckbox,
+  ],
   providers: [
     {
       multi: true,
@@ -24,6 +34,10 @@ import { AsyncPipe } from '@angular/common';
 export class NmcsMonthOfYearSelectComponent<FormControlValue extends TNmcsValue> extends NmcsInput<FormControlValue> {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
   private readonly monthFormat = inject(NGX_MAT_CRON_SELECT_WEEK_FORMAT, { optional: true });
+
+  public readonly everyMonthFormControl = input.required<FormControl<boolean> | null>();
+  public readonly isEveryMonthCheckboxVisible = input.required<boolean>();
+
   protected readonly options = this.prepareOrderedOptions();
 
   constructor() {

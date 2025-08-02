@@ -1,6 +1,8 @@
-import { Component, computed, effect, forwardRef, inject, OnDestroy, Signal } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import { Component, computed, effect, forwardRef, inject, input, OnDestroy, Signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatError, MatFormField, MatInput, MatLabel, MatSuffix } from '@angular/material/input';
@@ -16,7 +18,6 @@ import { twelveHourLocales } from '../../lib/ngx-mat-cron-select.interface';
 import { NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
   imports: [
@@ -34,6 +35,7 @@ import { AsyncPipe } from '@angular/common';
     MatFormFieldModule,
     MatSelect,
     AsyncPipe,
+    MatCheckbox,
   ],
   providers: [
     {
@@ -56,6 +58,9 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue>
 {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
   private readonly isTwelveHour = inject<Signal<boolean>>(NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR, { optional: true });
+
+  public readonly everyHourFormControl = input.required<FormControl<boolean> | null>();
+  public readonly isEveryHourCheckboxVisible = input.required<boolean>();
 
   protected readonly dateControl = new FormControl<Date | null>(null, [Validators.required]);
   private hourControlValueSubscription: Subscription | null = null;

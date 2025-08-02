@@ -18,8 +18,7 @@ export interface IInputsFormGroupValue {
 }
 
 export interface IEveryCheckboxesFormGroupValue {
-  dayOfMonth: boolean;
-  dayOfWeek: boolean;
+  day: boolean;
   hour: boolean;
   minute: boolean;
   monthOfYear: boolean;
@@ -45,8 +44,7 @@ export interface IInputsFormGroup {
 }
 
 export interface IEveryCheckboxesFormGroup {
-  dayOfMonth: FormControl<boolean>;
-  dayOfWeek: FormControl<boolean>;
+  day: FormControl<boolean>;
   hour: FormControl<boolean>;
   minute: FormControl<boolean>;
   monthOfYear: FormControl<boolean>;

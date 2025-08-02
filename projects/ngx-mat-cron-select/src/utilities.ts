@@ -6,6 +6,9 @@ export interface INMCSTranslations {
   dayOfMonthSelectLabel: string;
   dayOfWeekSelectLabel: string;
   everyMinuteLabel: string;
+  everyHourLabel: string;
+  everyDayLabel: string;
+  everyMonthLabel: string;
   hourSelectLabel: string;
   minuteSelectLabel: string;
   monthSelectLabel: string;

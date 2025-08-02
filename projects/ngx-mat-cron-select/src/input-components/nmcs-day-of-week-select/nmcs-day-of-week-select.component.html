@@ -1,3 +1,5 @@
+@let everyDayControl = everyDayFormControl();
+
 <div class="nmcs-day-of-week-select">
   <mat-form-field subscriptSizing="dynamic">
     <mat-label>{{ 'dayOfWeekSelectLabel' | translateOrUseDefault | async }}</mat-label>
@@ -8,4 +10,10 @@
     </mat-select>
     <mat-error></mat-error>
   </mat-form-field>
+
+  @if (isEveryDayCheckboxVisible() && everyDayControl) {
+    <section>
+      <mat-checkbox [formControl]="everyDayControl">{{ 'everyDayLabel' | translateOrUseDefault | async }}</mat-checkbox>
+    </section>
+  }
 </div>

@@ -6,7 +6,10 @@ import { INMCSTranslations } from './utilities';
 const noTranslationValues: INMCSTranslations = {
   dayOfMonthSelectLabel: 'Select days',
   dayOfWeekSelectLabel: 'Select days of week',
+  everyDayLabel: 'Every Day',
+  everyHourLabel: 'Every Hour',
   everyMinuteLabel: 'Every Minute',
+  everyMonthLabel: 'Every Month',
   hourSelectLabel: 'Select hours',
   minuteSelectLabel: 'Select minutes',
   monthSelectLabel: 'Select months',
