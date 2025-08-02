@@ -5,6 +5,7 @@ import { NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE } from './tokens';
 export interface INMCSTranslations {
   dayOfMonthSelectLabel: string;
   dayOfWeekSelectLabel: string;
+  everyMinuteLabel: string;
   hourSelectLabel: string;
   minuteSelectLabel: string;
   monthSelectLabel: string;

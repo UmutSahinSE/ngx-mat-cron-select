@@ -1,6 +1,7 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, forwardRef } from '@angular/core';
-import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, forwardRef, input } from '@angular/core';
+import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatError } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
@@ -17,6 +18,7 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
     TranslateOrUseDefaultPipe,
     ReactiveFormsModule,
     AsyncPipe,
+    MatCheckbox,
   ],
   providers: [
     {
@@ -30,6 +32,8 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
   templateUrl: './nmcs-minute-select.component.html',
 })
 export class NmcsMinuteSelectComponent<FormControlValue extends TNmcsValue> extends NmcsInput<FormControlValue> {
+  public readonly everyMinuteFormControl = input.required<FormControl<boolean> | null>();
+  public readonly isEveryMinuteCheckboxVisible = input.required<boolean>();
   protected readonly minuteOptions = Array(60)
     .fill(null)
     .map((_, index) => index);

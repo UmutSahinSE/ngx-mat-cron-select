@@ -25,23 +25,20 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { MatTimepickerModule } from '@angular/material/timepicker';
-import { BehaviorSubject, filter, map, Observable, startWith, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, startWith, switchMap } from 'rxjs';
 import { NmcsDayOfMonthSelectComponent } from '../input-components/nmcs-day-of-month-select/nmcs-day-of-month-select.component';
 import { NmcsDayOfWeekSelectComponent } from '../input-components/nmcs-day-of-week-select/nmcs-day-of-week-select.component';
 import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nmcs-hour-select.component';
-import { TNmcsValue } from '../input-components/nmcs-input.component';
 import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
 import { NmcsMonthOfYearSelectComponent } from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
-import { ECronSelectTab, IInputsFormGroupValue } from './ngx-mat-cron-select.interface';
-
-export interface IInputsFormGroup {
-  dayOfMonth: FormControl<TNmcsValue>;
-  dayOfWeek: FormControl<TNmcsValue>;
-  hour: FormControl<TNmcsValue>;
-  minute: FormControl<TNmcsValue>;
-  monthOfYear: FormControl<TNmcsValue>;
-}
+import {
+  ECronSelectTab,
+  IEveryCheckboxesFormGroup,
+  IEveryCheckboxesFormGroupValue,
+  IInputsFormGroup,
+  IInputsFormGroupValue,
+} from './ngx-mat-cron-select.interface';
 
 const cronFields = ['minute', 'hour', 'dayOfMonth', 'monthOfYear', 'dayOfWeek'] as const;
 
@@ -86,22 +83,43 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     }),
   );
 
+  public everyCheckboxesFormGroup: InputSignal<FormGroup<IEveryCheckboxesFormGroup>> = input(
+    new FormGroup<IEveryCheckboxesFormGroup>({
+      dayOfMonth: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
+      dayOfWeek: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
+      hour: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
+      minute: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
+      monthOfYear: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
+    }),
+  );
+
   public readonly valueChange = output<string | null>();
 
   private readonly onTouchAdapter: BehaviorSubject<Observable<boolean>> = new BehaviorSubject(
     new Observable<boolean>().pipe(startWith(false)),
   );
-  private readonly inputsFormGroupValueAdapter: BehaviorSubject<Observable<IInputsFormGroupValue>> =
-    new BehaviorSubject(
-      new Observable<IInputsFormGroupValue>().pipe(startWith(this.inputsFormGroup().value as IInputsFormGroupValue)),
-    );
+  private readonly inputsFormGroupValueAdapter: BehaviorSubject<Observable<Partial<IInputsFormGroupValue>>> =
+    new BehaviorSubject(new Observable<Partial<IInputsFormGroupValue>>().pipe(startWith(this.inputsFormGroup().value)));
+  private readonly everyCheckboxesFormGroupValueAdapter: BehaviorSubject<
+    Observable<Partial<IEveryCheckboxesFormGroupValue>>
+  > = new BehaviorSubject(
+    new Observable<Partial<IEveryCheckboxesFormGroupValue>>().pipe(startWith(this.everyCheckboxesFormGroup().value)),
+  );
 
   public readonly inputsFormGroupValue = toSignal(
     this.inputsFormGroupValueAdapter.pipe(
       switchMap((valueObs) => valueObs),
       takeUntilDestroyed(),
     ),
-    { initialValue: this.inputsFormGroup().value as IInputsFormGroupValue },
+    { initialValue: this.inputsFormGroup().value },
+  );
+
+  public readonly everyCheckboxesFormGroupValue = toSignal(
+    this.everyCheckboxesFormGroupValueAdapter.pipe(
+      switchMap((valueObs) => valueObs),
+      takeUntilDestroyed(),
+    ),
+    { initialValue: this.everyCheckboxesFormGroup().value },
   );
 
   protected readonly manuallySelectedTab = signal<ECronSelectTab | null>(null);
@@ -157,7 +175,11 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
         const fieldName = cronFields[index];
 
-        return Array.isArray(formValues[fieldName]) ? formValues[fieldName].join(',') : formValues[fieldName];
+        return Array.isArray(formValues[fieldName])
+          ? formValues[fieldName].join(',')
+          : this.everyCheckboxesFormGroupValue()[fieldName]
+            ? '*'
+            : formValues[fieldName];
       })
       .join(' ');
   });
@@ -167,11 +189,13 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   private isInitialized = false;
   private previousValue: string | null = null;
+  protected readonly ECronSelectTab = ECronSelectTab;
 
   constructor() {
     this.registerInputFormControlEvents();
     this.registerFormControlInitialization();
     this.registerInputStatusBasedOnActiveTab();
+    this.registerDisableOrEnableInputs();
     this.registerOnChangeCall();
 
     this.onTouchAdapter.pipe(switchMap((touchObs) => touchObs)).subscribe((isTouched) => {
@@ -209,12 +233,22 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     effect(() => {
       for (const [index, isActive] of this.getActiveInputsBasedOnActiveTab().entries()) {
         const fieldName = cronFields[index];
+        const everyCheckboxesControl = this.everyCheckboxesFormGroup().controls[fieldName];
+        const inputsControl = this.inputsFormGroup().controls[fieldName];
 
-        if (isActive) {
-          this.inputsFormGroup().controls[fieldName].enable();
-        } else {
-          this.inputsFormGroup().controls[fieldName].disable();
+        if (!isActive) {
+          everyCheckboxesControl.disable();
+          inputsControl.disable();
+
+          continue;
         }
+
+        if (everyCheckboxesControl.enabled) {
+          continue;
+        }
+
+        everyCheckboxesControl.reset(false);
+        everyCheckboxesControl.enable();
       }
     });
   }
@@ -222,17 +256,42 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   private registerInputFormControlEvents(): void {
     effect(() => {
       const inputsFormGroup = this.inputsFormGroup();
+      const everyCheckboxesFormGroup = this.everyCheckboxesFormGroup();
       this.onTouchAdapter.next(
-        inputsFormGroup.events.pipe(
-          filter((controlEvent) => controlEvent instanceof TouchedChangeEvent),
-          map(({ touched }: TouchedChangeEvent) => touched),
-        ),
+        combineLatest([
+          inputsFormGroup.events.pipe(filter((controlEvent) => controlEvent instanceof TouchedChangeEvent)),
+          everyCheckboxesFormGroup.events.pipe(filter((controlEvent) => controlEvent instanceof TouchedChangeEvent)),
+        ]).pipe(map((events) => events.some(({ touched }) => touched))),
       );
       this.inputsFormGroupValueAdapter.next(
         (inputsFormGroup.valueChanges as Observable<IInputsFormGroupValue>).pipe(
           startWith(inputsFormGroup.value as IInputsFormGroupValue),
         ),
       );
+      this.everyCheckboxesFormGroupValueAdapter.next(
+        (everyCheckboxesFormGroup.valueChanges as Observable<IEveryCheckboxesFormGroupValue>).pipe(
+          startWith(everyCheckboxesFormGroup.value as IEveryCheckboxesFormGroupValue),
+        ),
+      );
+    });
+  }
+
+  private registerDisableOrEnableInputs(): void {
+    effect(() => {
+      for (const [index, isActive] of this.getActiveInputsBasedOnActiveTab().entries()) {
+        if (!isActive) {
+          continue;
+        }
+
+        const fieldName = cronFields[index];
+        const inputsControl = this.inputsFormGroup().controls[fieldName];
+
+        if (this.everyCheckboxesFormGroupValue()[fieldName]) {
+          inputsControl.disable();
+        } else {
+          inputsControl.enable();
+        }
+      }
     });
   }
 

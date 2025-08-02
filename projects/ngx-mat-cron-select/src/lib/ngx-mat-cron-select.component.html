@@ -1,55 +1,67 @@
 <div class="ngx-mat-cron-select">
   <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="manuallySelectedTab.set($event)">
     <mat-tab [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
-      <div class="vertical-flex-with-gap">
-        <nmcs-minute-select
-          class="fixed-width-select"
-          [formControl]="inputsFormGroup().controls.minute"
-        ></nmcs-minute-select>
-      </div>
+      @if (selectedTab() === ECronSelectTab.hour) {
+        <div class="vertical-flex-with-gap">
+          <nmcs-minute-select
+            class="fixed-width-select"
+            [formControl]="inputsFormGroup().controls.minute"
+            [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
+            [isEveryMinuteCheckboxVisible]="true"
+          ></nmcs-minute-select>
+        </div>
+      }
     </mat-tab>
     <mat-tab [label]="('tabLabelDay' | translateOrUseDefault | async) ?? ''">
-      <div class="vertical-flex-with-gap">
-        <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-      </div>
+      @if (selectedTab() === ECronSelectTab.day) {
+        <div class="vertical-flex-with-gap">
+          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+        </div>
+      }
     </mat-tab>
     <mat-tab [label]="('tabLabelWeek' | translateOrUseDefault | async) ?? ''">
-      <div class="vertical-flex-with-gap">
-        <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-        <nmcs-day-of-week-select
-          class="fixed-width-select"
-          [formControl]="inputsFormGroup().controls.dayOfWeek"
-        ></nmcs-day-of-week-select>
-      </div>
+      @if (selectedTab() === ECronSelectTab.week) {
+        <div class="vertical-flex-with-gap">
+          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+          <nmcs-day-of-week-select
+            class="fixed-width-select"
+            [formControl]="inputsFormGroup().controls.dayOfWeek"
+          ></nmcs-day-of-week-select>
+        </div>
+      }
     </mat-tab>
     <mat-tab [label]="('tabLabelMonth' | translateOrUseDefault | async) ?? ''">
-      <div class="vertical-flex-with-gap">
-        <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-        <nmcs-day-of-month-select
-          class="fixed-width-select"
-          [formControl]="inputsFormGroup().controls.dayOfMonth"
-        ></nmcs-day-of-month-select>
-      </div>
+      @if (selectedTab() === ECronSelectTab.month) {
+        <div class="vertical-flex-with-gap">
+          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+          <nmcs-day-of-month-select
+            class="fixed-width-select"
+            [formControl]="inputsFormGroup().controls.dayOfMonth"
+          ></nmcs-day-of-month-select>
+        </div>
+      }
     </mat-tab>
     <mat-tab [label]="('tabLabelYear' | translateOrUseDefault | async) ?? ''">
-      <div class="vertical-flex-with-gap">
-        <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-        <div class="side-by-side-container">
-          @for (monthOrDay of monthAndDayOrder; track monthOrDay) {
-            @if (monthOrDay === 'day') {
-              <nmcs-day-of-month-select
-                class="fixed-width-select"
-                [formControl]="inputsFormGroup().controls.dayOfMonth"
-              ></nmcs-day-of-month-select>
-            } @else {
-              <nmcs-month-of-year-select
-                class="fixed-width-select"
-                [formControl]="inputsFormGroup().controls.monthOfYear"
-              ></nmcs-month-of-year-select>
+      @if (selectedTab() === ECronSelectTab.year) {
+        <div class="vertical-flex-with-gap">
+          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+          <div class="side-by-side-container">
+            @for (monthOrDay of monthAndDayOrder; track monthOrDay) {
+              @if (monthOrDay === 'day') {
+                <nmcs-day-of-month-select
+                  class="fixed-width-select"
+                  [formControl]="inputsFormGroup().controls.dayOfMonth"
+                ></nmcs-day-of-month-select>
+              } @else {
+                <nmcs-month-of-year-select
+                  class="fixed-width-select"
+                  [formControl]="inputsFormGroup().controls.monthOfYear"
+                ></nmcs-month-of-year-select>
+              }
             }
-          }
+          </div>
         </div>
-      </div>
+      }
     </mat-tab>
   </mat-tab-group>
 </div>
@@ -60,6 +72,8 @@
     <nmcs-minute-select
       class="fixed-width-select"
       [formControl]="inputsFormGroup().controls.minute"
+      [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
+      [isEveryMinuteCheckboxVisible]="true"
     ></nmcs-minute-select>
   </div>
 </ng-template>
