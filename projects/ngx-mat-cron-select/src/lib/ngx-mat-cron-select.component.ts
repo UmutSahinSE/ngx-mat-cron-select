@@ -29,6 +29,7 @@ import { BehaviorSubject, combineLatest, filter, map, Observable, startWith, swi
 import { NmcsDayOfMonthSelectComponent } from '../input-components/nmcs-day-of-month-select/nmcs-day-of-month-select.component';
 import { NmcsDayOfWeekSelectComponent } from '../input-components/nmcs-day-of-week-select/nmcs-day-of-week-select.component';
 import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nmcs-hour-select.component';
+import { TNmcsValue } from '../input-components/nmcs-input.component';
 import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
 import { NmcsMonthOfYearSelectComponent } from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
@@ -146,41 +147,21 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     const value = this.inputCron();
     const manuallySelectedTab = this.manuallySelectedTab();
 
-    if (value === null && manuallySelectedTab === null) {
-      return this.initialTab();
-    }
-
     if (manuallySelectedTab !== null) {
       return manuallySelectedTab;
     }
 
-    const [_minute, hour, dayOfMonth, month, dayOfWeek] = value.split(' ');
-
-    const isHourUnspecified = hour === '*';
-    const isDayOfMonthUnspecified = dayOfMonth === '*';
-    const isMonthUnspecified = month === '*';
-    const isDayOfWeekUnspecified = dayOfWeek === '*';
-
-    if (isHourUnspecified && isDayOfMonthUnspecified && isMonthUnspecified && isDayOfWeekUnspecified) {
-      return ECronSelectTab.hour;
+    if (value === null) {
+      return this.initialTab();
     }
 
-    if (isDayOfMonthUnspecified && isMonthUnspecified && isDayOfWeekUnspecified) {
-      return ECronSelectTab.day;
-    }
-
-    if (isDayOfMonthUnspecified && isMonthUnspecified) {
-      return ECronSelectTab.week;
-    }
-
-    return isMonthUnspecified ? ECronSelectTab.month : ECronSelectTab.year;
+    return this.determineTabBasedOnCronInput(value);
   });
 
   protected readonly monthAndDayOrder: ('day' | 'month')[] = this.getMonthAndDayOrder();
   public readonly value = computed(() => {
     const formValues = this.inputsFormGroupValue();
 
-    // TODO also check if empty
     if (!this.inputsFormGroup().valid) {
       return null;
     }
@@ -203,7 +184,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   });
 
   public readonly isDisabled = signal(false);
-  private readonly inputCron = signal<string>('');
+  private readonly inputCron = signal<string | null>(null);
 
   private isInitialized = false;
   private previousValue: string | null = null;
@@ -228,12 +209,11 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private onTouched = (): void => {};
 
-  public writeValue(value: string): void {
-    // TODO validate cron
-    // check single select form group vs value
+  public writeValue(value: string | null): void {
+    const valueAfterValidation = this.validateInputCron(value);
 
     this.manuallySelectedTab.set(null);
-    this.inputCron.set(value);
+    this.inputCron.set(valueAfterValidation);
   }
 
   public registerOnChange(fn: any): void {
@@ -254,6 +234,13 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       for (const [index, isActive] of this.getActiveEveryCheckboxesBasedOnActiveTab().entries()) {
         const fieldName = everyDropdownFields[index];
         const everyCheckboxesControl = this.everyCheckboxesFormGroup().controls[fieldName];
+
+        if (!this.everyCheckboxesVisibility()[everyDropdownFields[index]]) {
+          everyCheckboxesControl.reset(false);
+          everyCheckboxesControl.enable();
+
+          continue;
+        }
 
         if (!isActive) {
           everyCheckboxesControl.disable();
@@ -297,12 +284,14 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   private registerDisableOrEnableInputs(): void {
     effect(() => {
       for (const [index, isActive] of this.getActiveInputsBasedOnActiveTab().entries()) {
-        if (!isActive) {
-          continue;
-        }
-
         const fieldName = cronFields[index];
         const inputsControl = this.inputsFormGroup().controls[fieldName];
+
+        if (!isActive) {
+          inputsControl.disable();
+
+          continue;
+        }
 
         if (this.everyCheckboxesFormGroupValue()[this.getCheckboxName(fieldName)]) {
           inputsControl.disable();
@@ -334,20 +323,44 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   private registerFormControlInitialization(): void {
     effect(() => {
-      const value = this.inputCron();
-      const [minute, hour, dayOfMonth, monthOfYear, dayOfWeek] = value.split(' ');
+      const inputCron = this.inputCron();
+
+      if (inputCron === null) {
+        this.inputsFormGroup().reset({
+          dayOfMonth: this.getEmptyInputValue('dayOfMonth'),
+          dayOfWeek: this.getEmptyInputValue('dayOfWeek'),
+          hour: this.getEmptyInputValue('hour'),
+          minute: this.getEmptyInputValue('minute'),
+          monthOfYear: this.getEmptyInputValue('monthOfYear'),
+        });
+
+        return;
+      }
+
+      const split = inputCron.split(' ');
+      const [minute, hour, dayOfMonth, monthOfYear, dayOfWeek] = split;
 
       this.inputsFormGroup().reset({
-        dayOfMonth:
-          dayOfMonth === '*' ? this.getEmptyInputValue('dayOfMonth') : this.getInputValue('dayOfMonth', dayOfMonth),
-        dayOfWeek:
-          dayOfWeek === '*' ? this.getEmptyInputValue('dayOfWeek') : this.getInputValue('dayOfWeek', dayOfWeek),
-        hour: hour === '*' ? this.getEmptyInputValue('hour') : this.getInputValue('hour', hour),
-        minute: minute === '*' ? this.getEmptyInputValue('minute') : this.getInputValue('minute', minute),
-        monthOfYear:
-          monthOfYear === '*' ? this.getEmptyInputValue('monthOfYear') : this.getInputValue('monthOfYear', monthOfYear),
+        dayOfMonth: this.convertCronInputToFormControlValue(dayOfMonth, 'dayOfMonth'),
+        dayOfWeek: this.convertCronInputToFormControlValue(dayOfWeek, 'dayOfWeek'),
+        hour: this.convertCronInputToFormControlValue(hour, 'hour'),
+        minute: this.convertCronInputToFormControlValue(minute, 'minute'),
+        monthOfYear: this.convertCronInputToFormControlValue(monthOfYear, 'monthOfYear'),
       });
+
+      for (const [index, fieldValue] of split.entries()) {
+        if (fieldValue !== '*') {
+          continue;
+        }
+
+        const checkboxName = this.getCheckboxName(cronFields[index]);
+        this.everyCheckboxesFormGroup().controls[checkboxName].reset(true);
+      }
     });
+  }
+
+  private convertCronInputToFormControlValue(inputValue: string, inputName: keyof IInputsFormGroupValue): TNmcsValue {
+    return inputValue === '*' ? this.getEmptyInputValue(inputName) : this.getInputValue(inputName, inputValue);
   }
 
   private getEmptyInputValue(inputName: keyof IInputsFormGroupValue): [] | null {
@@ -403,5 +416,54 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   private getCheckboxName(fieldName: (typeof cronFields)[number]): keyof IEveryCheckboxesFormGroupValue {
     return fieldName === 'dayOfMonth' || fieldName === 'dayOfWeek' ? 'day' : fieldName;
+  }
+
+  private validateInputCron(value: string | null): string | null {
+    if (value === null) {
+      return null;
+    }
+
+    const split = value.split(' ');
+
+    if (split.length !== 5) {
+      return null;
+    }
+
+    const isValid = Array.from(cronFields.entries()).every(([index, field]) => {
+      if (split[index] === '*') {
+        return true;
+      }
+
+      const isMulti = Array.isArray(this.inputsFormGroup().controls[field].value);
+
+      return isMulti
+        ? typeof Number(split[index]) === 'number'
+        : split[index].split(',').every((val) => typeof Number(val) === 'number');
+    });
+
+    return isValid ? value : null;
+  }
+
+  private determineTabBasedOnCronInput(value: string): ECronSelectTab {
+    const [_minute, hour, dayOfMonth, month, dayOfWeek] = value.split(' ');
+
+    const isHourUnspecified = hour === '*';
+    const isDayOfMonthUnspecified = dayOfMonth === '*';
+    const isMonthUnspecified = month === '*';
+    const isDayOfWeekUnspecified = dayOfWeek === '*';
+
+    if (isHourUnspecified && isDayOfMonthUnspecified && isMonthUnspecified && isDayOfWeekUnspecified) {
+      return ECronSelectTab.hour;
+    }
+
+    if (isDayOfMonthUnspecified && isMonthUnspecified && isDayOfWeekUnspecified) {
+      return ECronSelectTab.day;
+    }
+
+    if (isDayOfMonthUnspecified && isMonthUnspecified) {
+      return ECronSelectTab.week;
+    }
+
+    return isMonthUnspecified ? ECronSelectTab.month : ECronSelectTab.year;
   }
 }
