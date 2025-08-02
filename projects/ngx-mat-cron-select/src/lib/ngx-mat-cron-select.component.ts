@@ -34,11 +34,11 @@ import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-selec
 import { NmcsMonthOfYearSelectComponent } from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
 import {
-  ECronSelectTab,
   IEveryCheckboxesFormGroup,
   IEveryCheckboxesFormGroupValue,
   IInputsFormGroup,
   IInputsFormGroupValue,
+  ITab,
 } from './ngx-mat-cron-select.interface';
 
 const cronFields = [
@@ -85,8 +85,8 @@ const everyDropdownFields = [
 export class NgxMatCronSelectComponent implements ControlValueAccessor {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
 
-  public initialTab = input<ECronSelectTab>(ECronSelectTab.week);
-  public inputsFormGroup: InputSignal<FormGroup<IInputsFormGroup>> = input(
+  public readonly initialTab = input<keyof ITab>('week');
+  public readonly inputsFormGroup: InputSignal<FormGroup<IInputsFormGroup>> = input(
     new FormGroup<IInputsFormGroup>({
       dayOfMonth: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
       dayOfWeek: new FormControl<number[]>([], { nonNullable: true, validators: [Validators.required] }),
@@ -96,7 +96,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     }),
   );
 
-  public everyCheckboxesFormGroup = input<FormGroup<IEveryCheckboxesFormGroup>>(
+  public readonly everyCheckboxesFormGroup = input<FormGroup<IEveryCheckboxesFormGroup>>(
     new FormGroup<IEveryCheckboxesFormGroup>({
       day: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
       hour: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
@@ -105,7 +105,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     }),
   );
 
-  public everyCheckboxesVisibility = input<IEveryCheckboxesFormGroupValue>({
+  public readonly everyCheckboxesVisibility = input<IEveryCheckboxesFormGroupValue>({
     day: true,
     hour: true,
     minute: true,
@@ -113,6 +113,13 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
   });
 
   public readonly isDisabled = input<boolean>(false);
+  public readonly visibleTabs = input<ITab>({
+    day: true,
+    hour: true,
+    month: true,
+    week: true,
+    year: true,
+  });
 
   public readonly valueChange = output<string | null>();
 
@@ -143,21 +150,39 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     { initialValue: this.everyCheckboxesFormGroup().value },
   );
 
-  protected readonly manuallySelectedTab = signal<ECronSelectTab | null>(null);
+  protected readonly effectiveVisibleTabs = computed(() => {
+    const areAnyTabsVisible = Object.values(this.visibleTabs()).some(Boolean);
 
-  protected readonly selectedTab: Signal<ECronSelectTab> = computed(() => {
-    const value = this.inputCron();
+    return areAnyTabsVisible ? this.visibleTabs() : { ...this.visibleTabs(), hour: true };
+  });
+
+  protected readonly manuallySelectedTab = signal<keyof ITab | null>(null);
+
+  protected readonly selectedTab: Signal<keyof ITab> = computed(() => {
+    const inputCron = this.inputCron();
     const manuallySelectedTab = this.manuallySelectedTab();
 
     if (manuallySelectedTab !== null) {
-      return manuallySelectedTab;
+      return this.getMostAccurateAvailableTab(manuallySelectedTab);
     }
 
-    if (value === null) {
-      return this.initialTab();
+    if (inputCron === null) {
+      return this.getMostAccurateAvailableTab(
+        this.effectiveVisibleTabs()[this.initialTab()]
+          ? this.initialTab()
+          : (Object.entries(this.effectiveVisibleTabs()).find(([, isVisible]) => isVisible)![0] as keyof ITab),
+      );
     }
 
-    return this.determineTabBasedOnCronInput(value);
+    return this.getMostAccurateAvailableTab(this.determineTabBasedOnCronInput(inputCron));
+  });
+
+  protected readonly selectedTabIndex = computed(() => {
+    const index = (['hour', 'day', 'week', 'month', 'year'] as (keyof ITab)[])
+      .filter((tabName) => this.effectiveVisibleTabs()[tabName])
+      .indexOf(this.selectedTab());
+
+    return index === -1 ? 0 : index;
   });
 
   protected readonly monthAndDayOrder: ('day' | 'month')[] = this.getMonthAndDayOrder();
@@ -165,7 +190,9 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     const formValues = this.inputsFormGroupValue();
 
     if (!this.inputsFormGroup().valid) {
-      return null;
+      const everyCheckboxes = Object.values(this.everyCheckboxesFormGroupValue());
+
+      return everyCheckboxes.length && everyCheckboxes.every(Boolean) ? '* * * * *' : null;
     }
 
     return this.getActiveInputsBasedOnActiveTab()
@@ -189,7 +216,6 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   private isInitialized = false;
   private previousValue: string | null = null;
-  protected readonly ECronSelectTab = ECronSelectTab;
 
   constructor() {
     this.registerInputFormControlEvents();
@@ -224,6 +250,12 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     this.onTouched = fn;
   }
 
+  protected setTab(tabIndex: number): void {
+    const tabs: (keyof ITab)[] = ['hour', 'day', 'week', 'month', 'year'];
+    const visibleTabs = tabs.filter((tabName) => this.effectiveVisibleTabs()[tabName]);
+    this.manuallySelectedTab.set(visibleTabs[tabIndex]);
+  }
+
   private registerEveryCheckboxStatusBasedOnActiveTab(): void {
     effect(() => {
       for (const [index, isActive] of this.getActiveEveryCheckboxesBasedOnActiveTab().entries()) {
@@ -236,14 +268,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
           continue;
         }
 
-        if (!this.everyCheckboxesVisibility()[everyDropdownFields[index]]) {
-          everyCheckboxesControl.reset(false);
-          everyCheckboxesControl.enable();
-
-          continue;
-        }
-
-        if (!isActive) {
+        if (!isActive || !this.everyCheckboxesVisibility()[everyDropdownFields[index]]) {
           everyCheckboxesControl.disable();
 
           continue;
@@ -379,30 +404,30 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
   private getActiveInputsBasedOnActiveTab(): [boolean, boolean, boolean, boolean, boolean] {
     switch (this.selectedTab()) {
-      case ECronSelectTab.hour:
+      case 'hour':
         return [true, false, false, false, false];
-      case ECronSelectTab.day:
+      case 'day':
         return [true, true, false, false, false];
-      case ECronSelectTab.week:
+      case 'week':
         return [true, true, false, false, true];
-      case ECronSelectTab.month:
+      case 'month':
         return [true, true, true, false, false];
-      case ECronSelectTab.year:
+      case 'year':
         return [true, true, true, true, false];
     }
   }
 
   private getActiveEveryCheckboxesBasedOnActiveTab(): [boolean, boolean, boolean, boolean] {
     switch (this.selectedTab()) {
-      case ECronSelectTab.hour:
+      case 'hour':
         return [true, false, false, false];
-      case ECronSelectTab.day:
+      case 'day':
         return [true, true, false, false];
-      case ECronSelectTab.week:
+      case 'week':
         return [true, true, true, false];
-      case ECronSelectTab.month:
+      case 'month':
         return [true, true, true, false];
-      case ECronSelectTab.year:
+      case 'year':
         return [true, true, true, true];
     }
   }
@@ -448,7 +473,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     return isValid ? value : null;
   }
 
-  private determineTabBasedOnCronInput(value: string): ECronSelectTab {
+  private determineTabBasedOnCronInput(value: string): keyof ITab {
     const [_minute, hour, dayOfMonth, month, dayOfWeek] = value.split(' ');
 
     const isHourUnspecified = hour === '*';
@@ -457,17 +482,25 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     const isDayOfWeekUnspecified = dayOfWeek === '*';
 
     if (isHourUnspecified && isDayOfMonthUnspecified && isMonthUnspecified && isDayOfWeekUnspecified) {
-      return ECronSelectTab.hour;
+      return 'hour';
     }
 
     if (isDayOfMonthUnspecified && isMonthUnspecified && isDayOfWeekUnspecified) {
-      return ECronSelectTab.day;
+      return 'day';
     }
 
     if (isDayOfMonthUnspecified && isMonthUnspecified) {
-      return ECronSelectTab.week;
+      return 'week';
     }
 
-    return isMonthUnspecified ? ECronSelectTab.month : ECronSelectTab.year;
+    return isMonthUnspecified ? 'month' : 'year';
+  }
+
+  private getMostAccurateAvailableTab(tabName: keyof ITab): keyof ITab {
+    if (this.effectiveVisibleTabs()[tabName]) {
+      return tabName;
+    }
+
+    return (['year', 'month', 'week', 'day', 'hour'] as const).find((tab) => this.effectiveVisibleTabs()[tab])!;
   }
 }

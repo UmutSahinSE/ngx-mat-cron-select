@@ -1,12 +1,12 @@
 import { FormControl } from '@angular/forms';
 import { TNmcsValue } from '../input-components/nmcs-input.component';
 
-export enum ECronSelectTab {
-  hour = 0,
-  day = 1,
-  week = 2,
-  month = 3,
-  year = 4,
+export interface ITab {
+  hour: boolean;
+  day: boolean;
+  week: boolean;
+  month: boolean;
+  year: boolean;
 }
 
 export interface IInputsFormGroupValue {

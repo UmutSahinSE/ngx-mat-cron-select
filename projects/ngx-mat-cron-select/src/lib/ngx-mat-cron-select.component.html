@@ -1,76 +1,93 @@
 <div class="ngx-mat-cron-select">
-  <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="manuallySelectedTab.set($event)">
-    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
-      @if (selectedTab() === ECronSelectTab.hour) {
-        <div class="vertical-flex-with-gap">
-          <nmcs-minute-select
-            class="fixed-width-select"
-            [formControl]="inputsFormGroup().controls.minute"
-            [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
-            [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
-          ></nmcs-minute-select>
-        </div>
-      }
-    </mat-tab>
-    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelDay' | translateOrUseDefault | async) ?? ''">
-      @if (selectedTab() === ECronSelectTab.day) {
-        <div class="vertical-flex-with-gap">
-          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-        </div>
-      }
-    </mat-tab>
-    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelWeek' | translateOrUseDefault | async) ?? ''">
-      @if (selectedTab() === ECronSelectTab.week) {
-        <div class="vertical-flex-with-gap">
-          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-          <nmcs-day-of-week-select
-            class="fixed-width-select"
-            [formControl]="inputsFormGroup().controls.dayOfWeek"
-            [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-            [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
-          ></nmcs-day-of-week-select>
-        </div>
-      }
-    </mat-tab>
-    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelMonth' | translateOrUseDefault | async) ?? ''">
-      @if (selectedTab() === ECronSelectTab.month) {
-        <div class="vertical-flex-with-gap">
-          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-          <nmcs-day-of-month-select
-            class="fixed-width-select"
-            [formControl]="inputsFormGroup().controls.dayOfMonth"
-            [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-            [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
-          ></nmcs-day-of-month-select>
-        </div>
-      }
-    </mat-tab>
-    <mat-tab [disabled]="isDisabled()" [label]="('tabLabelYear' | translateOrUseDefault | async) ?? ''">
-      @if (selectedTab() === ECronSelectTab.year) {
-        <div class="vertical-flex-with-gap">
-          <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
-          <div class="side-by-side-container">
-            @for (monthOrDay of monthAndDayOrder; track monthOrDay) {
-              @if (monthOrDay === 'day') {
-                <nmcs-day-of-month-select
-                  class="fixed-width-select"
-                  [formControl]="inputsFormGroup().controls.dayOfMonth"
-                  [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-                  [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
-                ></nmcs-day-of-month-select>
-              } @else {
-                <nmcs-month-of-year-select
-                  class="fixed-width-select"
-                  [formControl]="inputsFormGroup().controls.monthOfYear"
-                  [everyMonthFormControl]="everyCheckboxesFormGroup().controls.monthOfYear"
-                  [isEveryMonthCheckboxVisible]="everyCheckboxesVisibility().monthOfYear"
-                ></nmcs-month-of-year-select>
-              }
-            }
+  <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="setTab($event)">
+    @if (effectiveVisibleTabs().hour) {
+      <mat-tab [disabled]="isDisabled()" [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
+        @if (selectedTab() === 'hour') {
+          <div class="vertical-flex-with-gap">
+            <nmcs-minute-select
+              class="fixed-width-select"
+              [formControl]="inputsFormGroup().controls.minute"
+              [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
+              [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
+            ></nmcs-minute-select>
           </div>
-        </div>
-      }
-    </mat-tab>
+        }
+      </mat-tab>
+    }
+
+    @if (effectiveVisibleTabs().day) {
+      <mat-tab [disabled]="isDisabled()" [label]="('tabLabelDay' | translateOrUseDefault | async) ?? ''">
+        @if (selectedTab() === 'day') {
+          <div class="vertical-flex-with-gap">
+            <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+          </div>
+        }
+      </mat-tab>
+    }
+
+    @if (effectiveVisibleTabs().week) {
+      <mat-tab [disabled]="isDisabled()" [label]="('tabLabelWeek' | translateOrUseDefault | async) ?? ''">
+        @if (selectedTab() === 'week') {
+          <div class="vertical-flex-with-gap">
+            <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+            <nmcs-day-of-week-select
+              class="fixed-width-select"
+              [formControl]="inputsFormGroup().controls.dayOfWeek"
+              [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
+              [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
+            ></nmcs-day-of-week-select>
+          </div>
+        }
+      </mat-tab>
+    }
+
+    @if (effectiveVisibleTabs().month) {
+      <mat-tab [disabled]="isDisabled()" [label]="('tabLabelMonth' | translateOrUseDefault | async) ?? ''">
+        @if (selectedTab() === 'month') {
+          <div class="vertical-flex-with-gap">
+            <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+            <nmcs-day-of-month-select
+              class="fixed-width-select"
+              [formControl]="inputsFormGroup().controls.dayOfMonth"
+              [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
+              [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
+            ></nmcs-day-of-month-select>
+          </div>
+        }
+      </mat-tab>
+    }
+
+    @if (effectiveVisibleTabs().year) {
+      <mat-tab
+        [disabled]="isDisabled()"
+        [label]="('tabLabelYear' | translateOrUseDefault | async) ?? ''"
+      >
+        @if (selectedTab() === 'year') {
+          <div class="vertical-flex-with-gap">
+            <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
+            <div class="side-by-side-container">
+              @for (monthOrDay of monthAndDayOrder; track monthOrDay) {
+                @if (monthOrDay === 'day') {
+                  <nmcs-day-of-month-select
+                    class="fixed-width-select"
+                    [formControl]="inputsFormGroup().controls.dayOfMonth"
+                    [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
+                    [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
+                  ></nmcs-day-of-month-select>
+                } @else {
+                  <nmcs-month-of-year-select
+                    class="fixed-width-select"
+                    [formControl]="inputsFormGroup().controls.monthOfYear"
+                    [everyMonthFormControl]="everyCheckboxesFormGroup().controls.monthOfYear"
+                    [isEveryMonthCheckboxVisible]="everyCheckboxesVisibility().monthOfYear"
+                  ></nmcs-month-of-year-select>
+                }
+              }
+            </div>
+          </div>
+        }
+      </mat-tab>
+    }
   </mat-tab-group>
 </div>
 
