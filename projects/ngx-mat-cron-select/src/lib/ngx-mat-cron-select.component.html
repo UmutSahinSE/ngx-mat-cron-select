@@ -7,7 +7,7 @@
             class="fixed-width-select"
             [formControl]="inputsFormGroup().controls.minute"
             [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
-            [isEveryMinuteCheckboxVisible]="true"
+            [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
           ></nmcs-minute-select>
         </div>
       }
@@ -27,7 +27,7 @@
             class="fixed-width-select"
             [formControl]="inputsFormGroup().controls.dayOfWeek"
             [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-            [isEveryDayCheckboxVisible]="true"
+            [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
           ></nmcs-day-of-week-select>
         </div>
       }
@@ -40,7 +40,7 @@
             class="fixed-width-select"
             [formControl]="inputsFormGroup().controls.dayOfMonth"
             [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-            [isEveryDayCheckboxVisible]="true"
+            [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
           ></nmcs-day-of-month-select>
         </div>
       }
@@ -56,14 +56,14 @@
                   class="fixed-width-select"
                   [formControl]="inputsFormGroup().controls.dayOfMonth"
                   [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-                  [isEveryDayCheckboxVisible]="true"
+                  [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
                 ></nmcs-day-of-month-select>
               } @else {
                 <nmcs-month-of-year-select
                   class="fixed-width-select"
                   [formControl]="inputsFormGroup().controls.monthOfYear"
                   [everyMonthFormControl]="everyCheckboxesFormGroup().controls.monthOfYear"
-                  [isEveryMonthCheckboxVisible]="true"
+                  [isEveryMonthCheckboxVisible]="everyCheckboxesVisibility().monthOfYear"
                 ></nmcs-month-of-year-select>
               }
             }
@@ -80,13 +80,13 @@
       class="fixed-width-select"
       [formControl]="inputsFormGroup().controls.hour"
       [everyHourFormControl]="everyCheckboxesFormGroup().controls.hour"
-      [isEveryHourCheckboxVisible]="true"
+      [isEveryHourCheckboxVisible]="everyCheckboxesVisibility().hour"
     ></nmcs-hour-select>
     <nmcs-minute-select
       class="fixed-width-select"
       [formControl]="inputsFormGroup().controls.minute"
       [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
-      [isEveryMinuteCheckboxVisible]="true"
+      [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
     ></nmcs-minute-select>
   </div>
 </ng-template>

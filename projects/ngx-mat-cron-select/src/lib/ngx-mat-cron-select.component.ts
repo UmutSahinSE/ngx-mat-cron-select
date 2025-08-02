@@ -95,7 +95,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     }),
   );
 
-  public everyCheckboxesFormGroup: InputSignal<FormGroup<IEveryCheckboxesFormGroup>> = input(
+  public everyCheckboxesFormGroup = input<FormGroup<IEveryCheckboxesFormGroup>>(
     new FormGroup<IEveryCheckboxesFormGroup>({
       day: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
       hour: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
@@ -103,6 +103,13 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       monthOfYear: new FormControl<boolean>(false, { nonNullable: true, validators: [Validators.required] }),
     }),
   );
+
+  public everyCheckboxesVisibility = input<IEveryCheckboxesFormGroupValue>({
+    day: true,
+    hour: true,
+    minute: true,
+    monthOfYear: true,
+  });
 
   public readonly valueChange = output<string | null>();
 
