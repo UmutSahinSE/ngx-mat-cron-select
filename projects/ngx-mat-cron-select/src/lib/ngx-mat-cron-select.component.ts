@@ -307,16 +307,19 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       const prevValue = this.previousValue;
       const newValue = this.value();
 
-      if (!this.isInitialized || prevValue === newValue) {
+      if (!this.isInitialized) {
         this.isInitialized = true;
 
+        return;
+      }
+
+      if (prevValue === newValue) {
         return;
       }
 
       this.previousValue = newValue;
       this.valueChange.emit(newValue);
 
-      // TODO prevent onchange from running on initialization
       this.onChange(newValue);
     });
   }
