@@ -155,7 +155,9 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
 
     return areAnyTabsVisible ? this.visibleTabs() : { ...this.visibleTabs(), hour: true };
   });
-
+  protected readonly isThereASingleVisibleTab = computed(() => {
+    return Object.values(this.effectiveVisibleTabs()).filter(Boolean).length === 1;
+  });
   protected readonly manuallySelectedTab = signal<keyof ITab | null>(null);
 
   protected readonly selectedTab: Signal<keyof ITab> = computed(() => {

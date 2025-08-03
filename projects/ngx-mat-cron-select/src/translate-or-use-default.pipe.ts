@@ -15,8 +15,8 @@ const noTranslationValues: INMCSTranslations = {
   monthSelectLabel: 'Select months',
   tabLabelDay: 'Hour',
   tabLabelHour: 'Day',
-  tabLabelMonth: 'Week',
-  tabLabelWeek: 'Month',
+  tabLabelMonth: 'Month',
+  tabLabelWeek: 'Week',
   tabLabelYear: 'Year',
 };
 
