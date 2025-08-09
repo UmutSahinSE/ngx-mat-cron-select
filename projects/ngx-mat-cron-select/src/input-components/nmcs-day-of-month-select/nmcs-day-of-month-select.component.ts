@@ -1,12 +1,12 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, forwardRef, input } from '@angular/core';
 import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckbox } from '@angular/material/checkbox';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatError } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
-import { MatCheckbox } from '@angular/material/checkbox';
 
 @Component({
   imports: [
