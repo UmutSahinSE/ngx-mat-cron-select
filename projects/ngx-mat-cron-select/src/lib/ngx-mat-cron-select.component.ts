@@ -291,6 +291,7 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
     effect(() => {
       const prevValue = this.previousValue;
       const newValue = this.value();
+      this.previousValue = newValue;
 
       if (!this.isInitialized) {
         this.isInitialized = true;
@@ -302,7 +303,6 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
         return;
       }
 
-      this.previousValue = newValue;
       this.valueChange.emit(newValue);
 
       this.onChange(newValue);
@@ -406,23 +406,12 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       const fieldName = everyDropdownFields[index];
       const everyCheckboxesControl = this.everyCheckboxesFormGroup().controls[fieldName];
 
-      if (this.isDisabled()) {
+      if (this.isDisabled() || !isActive || !this.everyCheckboxesVisibility()[everyDropdownFields[index]]) {
         everyCheckboxesControl.disable();
 
         continue;
       }
 
-      if (!isActive || !this.everyCheckboxesVisibility()[everyDropdownFields[index]]) {
-        everyCheckboxesControl.disable();
-
-        continue;
-      }
-
-      if (everyCheckboxesControl.enabled) {
-        continue;
-      }
-
-      everyCheckboxesControl.reset(false);
       everyCheckboxesControl.enable();
     }
   }
