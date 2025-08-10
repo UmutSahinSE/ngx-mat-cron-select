@@ -1,3 +1,5 @@
+[Demo](https://stackblitz.com/~/github.com/UmutSahinSE/ngx-mat-cron-select-playground?file=package.json:L31-L37)
+
 ## Features
 
 - Provides an interface for cron digits to be set as single or multiple values.
