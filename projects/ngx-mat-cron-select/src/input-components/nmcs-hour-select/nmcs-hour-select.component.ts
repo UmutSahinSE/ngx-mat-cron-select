@@ -132,9 +132,11 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue>
   private syncControlStatus(): void {
     effect(() => {
       this.hourControlStatusSubscription?.unsubscribe();
-      this.hourControlStatusSubscription = this.formControl().statusChanges.subscribe(() => {
-        this.copyStatus(this.formControl(), this.dateControl);
-      });
+      this.hourControlStatusSubscription = this.formControl()
+        .statusChanges.pipe(startWith(null))
+        .subscribe(() => {
+          this.copyStatus(this.formControl(), this.dateControl);
+        });
     });
 
     this.dateControl.statusChanges.pipe(takeUntilDestroyed()).subscribe(() => {

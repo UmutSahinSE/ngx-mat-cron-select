@@ -505,17 +505,13 @@ export class NgxMatCronSelectComponent implements ControlValueAccessor {
       const fieldName = cronFields[index];
       const inputsControl = this.inputsFormGroup().controls[fieldName];
 
-      if (!isActive || this.isDisabled()) {
+      if (!isActive || this.isDisabled() || this.everyCheckboxesFormGroupValue()[this.getCheckboxName(fieldName)]) {
         inputsControl.disable();
 
         continue;
       }
 
-      if (this.everyCheckboxesFormGroupValue()[this.getCheckboxName(fieldName)]) {
-        inputsControl.disable();
-      } else {
-        inputsControl.enable();
-      }
+      inputsControl.enable();
     }
   }
 
