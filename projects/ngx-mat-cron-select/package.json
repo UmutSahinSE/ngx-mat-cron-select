@@ -1,6 +1,6 @@
 {
   "name": "ngx-mat-cron-select",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Provides an interface to modify cron digit values using Angular Material inputs.",
   "license": "MIT",
   "peerDependencies": {
