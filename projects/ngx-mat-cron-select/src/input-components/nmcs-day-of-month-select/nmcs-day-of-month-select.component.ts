@@ -35,7 +35,7 @@ export class NmcsDayOfMonthSelectComponent<FormControlValue extends TNmcsValue> 
   public readonly everyDayFormControl = input.required<FormControl<boolean> | null>();
   public readonly isEveryDayCheckboxVisible = input.required<boolean>();
 
-  protected readonly options = Array(30)
+  protected readonly options = Array(31)
     .fill(null)
     .map((_, index) => index + 1);
 
