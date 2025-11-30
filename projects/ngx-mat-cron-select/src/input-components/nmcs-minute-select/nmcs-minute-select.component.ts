@@ -6,6 +6,7 @@ import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatError } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
+import { INMCSTranslations } from '../../utilities';
 import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
 
 @Component({
@@ -32,11 +33,18 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
   templateUrl: './nmcs-minute-select.component.html',
 })
 export class NmcsMinuteSelectComponent<FormControlValue extends TNmcsValue> extends NmcsInput<FormControlValue> {
-  public readonly everyMinuteFormControl = input.required<FormControl<boolean> | null>();
+  public readonly repeatOrNotFormControl = input.required<FormControl<boolean> | null>();
   public readonly isEveryMinuteCheckboxVisible = input.required<boolean>();
   protected readonly minuteOptions = Array(60)
     .fill(null)
     .map((_, index) => index);
+
+  protected readonly repeatOptions: { id: number; name: keyof INMCSTranslations }[] = Array(29)
+    .fill(null)
+    .map((_, index) => ({
+      id: index + 1,
+      name: index === 0 ? 'everyMinuteLabel' : 'repeatMinute',
+    }));
 
   constructor() {
     super();

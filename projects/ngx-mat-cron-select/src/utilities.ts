@@ -17,6 +17,7 @@ export interface INMCSTranslations {
   tabLabelWeek: string;
   tabLabelMonth: string;
   tabLabelYear: string;
+  repeatMinute: string;
 }
 
 export function provideNMCSTranslations<Language extends string>(
@@ -26,15 +27,19 @@ export function provideNMCSTranslations<Language extends string>(
   return {
     provide: NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE,
     useValue: {
-      stream: (key: string) =>
+      stream: (key: string, interpolationParams: Record<string, string> = {}) =>
         combineLatest({
           language,
           translations,
         }).pipe(
           map(({ translations, language }) => {
             const simplifiedKey = key.split('.')[1] as keyof INMCSTranslations;
+            const translatedValue = translations[language][simplifiedKey];
 
-            return translations[language][simplifiedKey];
+            return Object.entries(interpolationParams).reduce(
+              (reducePayload, [paramKey, value]) => reducePayload.replaceAll(`{{${paramKey}}}`, value),
+              translatedValue,
+            );
           }),
         ),
     },

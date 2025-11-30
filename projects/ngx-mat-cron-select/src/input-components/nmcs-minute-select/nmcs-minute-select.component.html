@@ -1,19 +1,33 @@
-@let everyMinuteControl = everyMinuteFormControl();
+@let repeatOrNotControl = repeatOrNotFormControl();
 
 <div class="nmcs-minute-select">
-  <mat-form-field subscriptSizing="dynamic">
-    <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [formControl]="formControl()" [multiple]="isMultiselect()">
-      @for (minuteOption of minuteOptions; track minuteOption) {
-        <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
-      }
-    </mat-select>
-    <mat-error></mat-error>
-  </mat-form-field>
+  @if (!repeatOrNotControl?.value) {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formControl]="formControl()" [multiple]="isMultiselect()">
+        @for (minuteOption of minuteOptions; track minuteOption) {
+          <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
+        }
+      </mat-select>
+      <mat-error></mat-error>
+    </mat-form-field>
+  } @else {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formControl]="re()">
+        @for (repeatOption of repeatOptions; track repeatOption) {
+          <mat-option [value]="repeatOption.id">{{
+            repeatOption.name | translateOrUseDefault: { repeat: `${repeatOption.id + 1}` }
+          }}</mat-option>
+        }
+      </mat-select>
+      <mat-error></mat-error>
+    </mat-form-field>
+  }
 
-  @if (isEveryMinuteCheckboxVisible() && everyMinuteControl) {
+  @if (isEveryMinuteCheckboxVisible() && repeatOrNotControl) {
     <section>
-      <mat-checkbox [formControl]="everyMinuteControl">{{
+      <mat-checkbox [formControl]="repeatOrNotControl">{{
         'everyMinuteLabel' | translateOrUseDefault | async
       }}</mat-checkbox>
     </section>

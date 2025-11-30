@@ -14,5 +14,5 @@ export const NGX_MAT_CRON_SELECT_MONTH_FORMAT = new InjectionToken<'long' | 'sho
 );
 
 export const NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE = new InjectionToken<{
-  stream: (key: string) => Observable<string | any>;
+  stream: (key: string, interpolationParams: Record<string, string>) => Observable<string | any>;
 }>('ngx-mat-cron-select/TRANSLATE_SERVICE');

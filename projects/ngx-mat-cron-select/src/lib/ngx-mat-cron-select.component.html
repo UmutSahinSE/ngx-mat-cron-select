@@ -51,7 +51,7 @@
     <nmcs-minute-select
       class="fixed-width-select"
       [formControl]="inputsFormGroup().controls.minute"
-      [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
+      [repeatOrNotFormControl]="everyCheckboxesFormGroup().controls.minute"
       [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
     ></nmcs-minute-select>
   </div>
@@ -63,7 +63,7 @@
       <nmcs-minute-select
         class="fixed-width-select"
         [formControl]="inputsFormGroup().controls.minute"
-        [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
+        [repeatOrNotFormControl]="everyCheckboxesFormGroup().controls.minute"
         [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
       ></nmcs-minute-select>
     </div>

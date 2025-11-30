@@ -13,6 +13,7 @@ const noTranslationValues: INMCSTranslations = {
   hourSelectLabel: 'Select hours',
   minuteSelectLabel: 'Select minutes',
   monthSelectLabel: 'Select months',
+  repeatMinute: 'Every {{repeat}}. minute',
   tabLabelDay: 'Hour',
   tabLabelHour: 'Day',
   tabLabelMonth: 'Month',
@@ -24,11 +25,11 @@ const noTranslationValues: INMCSTranslations = {
 export class TranslateOrUseDefaultPipe implements PipeTransform {
   private readonly translate = inject(NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE, { optional: true });
 
-  public transform(key: keyof INMCSTranslations): Observable<string> {
+  public transform(key: keyof INMCSTranslations, interpolationParams: Record<string, string> = {}): Observable<string> {
     const defaultTranslation = noTranslationValues[key];
 
     return this.translate
-      ? this.translate.stream(`ngxMatCronSelect.${key}`).pipe(
+      ? this.translate.stream(`ngxMatCronSelect.${key}`, interpolationParams).pipe(
           map((res) => (res === `ngxMatCronSelect.${key}` ? defaultTranslation : res)),
           startWith(defaultTranslation),
         )
