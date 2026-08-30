@@ -135,10 +135,6 @@ export class NgxMatCronSelectComponent {
     settingSymbol: signal<symbol | null>(null),
   } as const;
 
-  public readonly repeatingCheckboxFieldTree: InputSignal<FieldTree<IEveryCheckboxesFormGroupValue>> = input(
-    form(this.repeatingCheckboxesModel),
-  );
-
   private readonly isRepeatingCheckboxAvailabilitySettled = computed(() => {
     const disabledStatuses = [
       this.initializationChecklist.disablingRepeatingCheckbox.day(),
@@ -164,6 +160,14 @@ export class NgxMatCronSelectComponent {
     minute: this.getIsRepeatingCheckboxDisabled('minute'),
     monthOfYear: this.getIsRepeatingCheckboxDisabled('monthOfYear'),
   } as const;
+
+  public readonly repeatingCheckboxFieldTree: InputSignal<FieldTree<IEveryCheckboxesFormGroupValue>> = input(
+    form(this.repeatingCheckboxesModel, (schema) => {
+      for (const fieldName of repeatingCheckboxFields) {
+        disabled(schema[fieldName], this.isCheckboxDisabled[fieldName]);
+      }
+    }),
+  );
 
   public readonly inputsFormGroup: InputSignal<FieldTree<IInputsFormGroup>> = input(
     form(this.inputsModel, (schema) => {
@@ -202,7 +206,9 @@ export class NgxMatCronSelectComponent {
           return '*';
         }
 
-        return Array.isArray(formValues[fieldName]) ? formValues[fieldName].join(',') : formValues[fieldName];
+        return Array.isArray(formValues[fieldName])
+          ? [...formValues[fieldName]].sort((a, b) => a - b).join(',')
+          : formValues[fieldName];
       })
       .join(' ');
   });
