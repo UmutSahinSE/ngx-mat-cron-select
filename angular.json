@@ -27,8 +27,7 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "tsConfig": "projects/ngx-mat-cron-select/tsconfig.spec.json",
-            "polyfills": ["zone.js", "zone.js/testing"]
+            "tsConfig": "projects/ngx-mat-cron-select/tsconfig.spec.json"
           }
         }
       }

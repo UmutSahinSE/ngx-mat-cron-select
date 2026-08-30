@@ -1,20 +1,18 @@
-@let everyMonthControl = everyMonthFormControl();
+@let everyMonthControl = checkboxFieldTree();
 
 <div class="nmcs-month-of-year-select">
   <mat-form-field subscriptSizing="dynamic">
     <mat-label>{{ 'monthSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [formControl]="formControl()" [multiple]="isMultiselect()">
+    <mat-select [field]="field()" [multiple]="isMultiselect()">
       @for (option of options; track option) {
         <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
 
-  @if (isEveryMonthCheckboxVisible() && everyMonthControl) {
+  @if (isCheckboxVisible() && everyMonthControl) {
     <section>
-      <mat-checkbox [formControl]="everyMonthControl">{{
-        'everyMonthLabel' | translateOrUseDefault | async
-      }}</mat-checkbox>
+      <mat-checkbox [field]="everyMonthControl">{{ 'everyMonthLabel' | translateOrUseDefault | async }}</mat-checkbox>
     </section>
   }
 </div>

@@ -1,9 +1,9 @@
-@let everyDayControl = everyDayFormControl();
+@let checkboxField = checkboxFieldTree();
 
 <div class="nmcs-day-of-month-select">
   <mat-form-field subscriptSizing="dynamic">
     <mat-label>{{ 'dayOfMonthSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [formControl]="formControl()" [multiple]="isMultiselect()">
+    <mat-select [field]="field()" [multiple]="isMultiselect()">
       @for (option of options; track option) {
         <mat-option [value]="option">{{ option }}</mat-option>
       }
@@ -11,9 +11,9 @@
     <mat-error></mat-error>
   </mat-form-field>
 
-  @if (isEveryDayCheckboxVisible() && everyDayControl) {
+  @if (isCheckboxVisible() && checkboxField) {
     <section>
-      <mat-checkbox [formControl]="everyDayControl">{{ 'everyDayLabel' | translateOrUseDefault | async }}</mat-checkbox>
+      <mat-checkbox [field]="checkboxField">{{ 'everyDayLabel' | translateOrUseDefault | async }}</mat-checkbox>
     </section>
   }
 </div>

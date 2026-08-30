@@ -44,15 +44,15 @@
   <div class="side-by-side-container">
     <nmcs-hour-select
       class="fixed-width-select"
-      [formControl]="inputsFormGroup().controls.hour"
-      [everyHourFormControl]="everyCheckboxesFormGroup().controls.hour"
-      [isEveryHourCheckboxVisible]="everyCheckboxesVisibility().hour"
+      [field]="inputsFormGroup().hour"
+      [checkboxFieldTree]="repeatingCheckboxFieldTree().hour"
+      [isCheckboxVisible]="repeatingCheckboxesVisibility().hour"
     ></nmcs-hour-select>
     <nmcs-minute-select
       class="fixed-width-select"
-      [formControl]="inputsFormGroup().controls.minute"
-      [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
-      [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
+      [field]="inputsFormGroup().minute"
+      [checkboxFieldTree]="repeatingCheckboxFieldTree().minute"
+      [isCheckboxVisible]="repeatingCheckboxesVisibility().minute"
     ></nmcs-minute-select>
   </div>
 </ng-template>
@@ -62,9 +62,9 @@
     <div class="vertical-flex-with-gap">
       <nmcs-minute-select
         class="fixed-width-select"
-        [formControl]="inputsFormGroup().controls.minute"
-        [everyMinuteFormControl]="everyCheckboxesFormGroup().controls.minute"
-        [isEveryMinuteCheckboxVisible]="everyCheckboxesVisibility().minute"
+        [field]="inputsFormGroup().minute"
+        [checkboxFieldTree]="repeatingCheckboxFieldTree().minute"
+        [isCheckboxVisible]="repeatingCheckboxesVisibility().minute"
       ></nmcs-minute-select>
     </div>
   }
@@ -84,9 +84,9 @@
       <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
       <nmcs-day-of-week-select
         class="fixed-width-select"
-        [formControl]="inputsFormGroup().controls.dayOfWeek"
-        [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-        [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
+        [field]="inputsFormGroup().dayOfWeek"
+        [checkboxFieldTree]="repeatingCheckboxFieldTree().day"
+        [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
       ></nmcs-day-of-week-select>
     </div>
   }
@@ -98,9 +98,9 @@
       <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
       <nmcs-day-of-month-select
         class="fixed-width-select"
-        [formControl]="inputsFormGroup().controls.dayOfMonth"
-        [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-        [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
+        [field]="inputsFormGroup().dayOfMonth"
+        [checkboxFieldTree]="repeatingCheckboxFieldTree().day"
+        [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
       ></nmcs-day-of-month-select>
     </div>
   }
@@ -115,16 +115,16 @@
           @if (monthOrDay === 'day') {
             <nmcs-day-of-month-select
               class="fixed-width-select"
-              [formControl]="inputsFormGroup().controls.dayOfMonth"
-              [everyDayFormControl]="everyCheckboxesFormGroup().controls.day"
-              [isEveryDayCheckboxVisible]="everyCheckboxesVisibility().day"
+              [field]="inputsFormGroup().dayOfMonth"
+              [checkboxFieldTree]="repeatingCheckboxFieldTree().day"
+              [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
             ></nmcs-day-of-month-select>
           } @else {
             <nmcs-month-of-year-select
               class="fixed-width-select"
-              [formControl]="inputsFormGroup().controls.monthOfYear"
-              [everyMonthFormControl]="everyCheckboxesFormGroup().controls.monthOfYear"
-              [isEveryMonthCheckboxVisible]="everyCheckboxesVisibility().monthOfYear"
+              [field]="inputsFormGroup().monthOfYear"
+              [checkboxFieldTree]="repeatingCheckboxFieldTree().monthOfYear"
+              [isCheckboxVisible]="repeatingCheckboxesVisibility().monthOfYear"
             ></nmcs-month-of-year-select>
           }
         }

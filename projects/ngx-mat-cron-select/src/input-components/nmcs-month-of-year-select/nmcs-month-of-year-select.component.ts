@@ -1,13 +1,14 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, forwardRef, inject, input } from '@angular/core';
-import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, computed, inject, input } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { Field, FieldTree } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
 import { NGX_MAT_CRON_SELECT_WEEK_FORMAT } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
-import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
+import { TNmcsValue } from '../nmcs-input.interface';
 
 @Component({
   imports: [
@@ -19,30 +20,22 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
     MatOption,
     AsyncPipe,
     MatCheckbox,
-  ],
-  providers: [
-    {
-      multi: true,
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NmcsMonthOfYearSelectComponent),
-    },
+    Field,
   ],
   selector: 'nmcs-month-of-year-select',
   styleUrl: './nmcs-month-of-year-select.component.scss',
   templateUrl: './nmcs-month-of-year-select.component.html',
 })
-export class NmcsMonthOfYearSelectComponent<FormControlValue extends TNmcsValue> extends NmcsInput<FormControlValue> {
+export class NmcsMonthOfYearSelectComponent<FormControlValue extends TNmcsValue> {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
   private readonly monthFormat = inject(NGX_MAT_CRON_SELECT_WEEK_FORMAT, { optional: true });
 
-  public readonly everyMonthFormControl = input.required<FormControl<boolean> | null>();
-  public readonly isEveryMonthCheckboxVisible = input.required<boolean>();
+  public readonly field = input.required<FieldTree<FormControlValue>>();
+  public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
+  public readonly isCheckboxVisible = input.required<boolean>();
 
+  public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));
   protected readonly options = this.prepareOrderedOptions();
-
-  constructor() {
-    super();
-  }
 
   private prepareOrderedOptions(): { cronValue: number; label: string }[] {
     const locale = this.matDateLocale ?? 'en-US';

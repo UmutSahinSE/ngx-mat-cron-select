@@ -11,32 +11,37 @@
 
 ## Requirements
 
-- Angular >= 19
+- zone.js not required (Zoneless)
 - Angular Material
 - Angular Forms
 - Rxjs
 
+  | ngx-mat-cron-select Version | Angular Version |
+  | --------------------------- | --------------- |
+  | 1.0.0 - 1.0.4               | \>= 19          |
+  | 1.1.0                       | \>= 21          |
+
 ## Inputs
 
 | Name                      | Description                                                                                                                                                                                                                     |
-|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | initialTab                | Cron Select will open this tab by default if formControl value is set as null.                                                                                                                                                  |
 | inputsFormGroup           | FormGroup which manages dropdowns. For multiselect values, new FormControl<number[]> should be defined. For single selection, new FormControl<number \| null> should be used. Form controls should include Validators.required. |
 | everyCheckboxesFormGroup  | FormGroup which manages checkboxes.                                                                                                                                                                                             |
-| everyCheckboxesVisibility | Determines which dropdowns should have checkboxes included.                                                                                                                                                                     |
+| repeatingCheckboxesVisibility | Determines which dropdowns should have checkboxes included.                                                                                                                                                                     |
 | isDisabled                | Disables all inputs.                                                                                                                                                                                                            |
 | visibleTabs               | Determines which tabs are visible. If only one of them is selected, tabs will be hidden.                                                                                                                                        |
 
 ## Outputs
 
 | Name        | Description                  |
-|-------------|------------------------------|
+| ----------- | ---------------------------- |
 | valueChange | Emits value on value change. |
 
 ## Injection Tokens
 
 | Name                                    | Description                                                |
-|-----------------------------------------|------------------------------------------------------------|
+| --------------------------------------- | ---------------------------------------------------------- |
 | MAT_DATE_LOCALE (From Angular Material) | Determines the locale.                                     |
 | NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR      | Determines whether 12 or 24 hour format should be used.    |
 | NGX_MAT_CRON_SELECT_WEEK_FORMAT         | Determines how the days of week are displayed in dropdown. |

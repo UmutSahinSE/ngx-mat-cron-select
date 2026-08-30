@@ -1,12 +1,13 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, forwardRef, input } from '@angular/core';
-import { FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
+import { Component, computed, input } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { Field, FieldTree } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatError } from '@angular/material/input';
 import { MatOption, MatSelect } from '@angular/material/select';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
-import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
+import { TNmcsValue } from '../nmcs-input.interface';
 
 @Component({
   imports: [
@@ -19,26 +20,19 @@ import { NmcsInput, TNmcsValue } from '../nmcs-input.component';
     ReactiveFormsModule,
     AsyncPipe,
     MatCheckbox,
-  ],
-  providers: [
-    {
-      multi: true,
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NmcsMinuteSelectComponent),
-    },
+    Field,
   ],
   selector: 'nmcs-minute-select',
   styleUrl: './nmcs-minute-select.component.scss',
   templateUrl: './nmcs-minute-select.component.html',
 })
-export class NmcsMinuteSelectComponent<FormControlValue extends TNmcsValue> extends NmcsInput<FormControlValue> {
-  public readonly everyMinuteFormControl = input.required<FormControl<boolean> | null>();
-  public readonly isEveryMinuteCheckboxVisible = input.required<boolean>();
+export class NmcsMinuteSelectComponent<FormControlValue extends TNmcsValue> {
+  public readonly field = input.required<FieldTree<FormControlValue>>();
+  public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
+  public readonly isCheckboxVisible = input.required<boolean>();
+
+  public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));
   protected readonly minuteOptions = Array(60)
     .fill(null)
     .map((_, index) => index);
-
-  constructor() {
-    super();
-  }
 }
