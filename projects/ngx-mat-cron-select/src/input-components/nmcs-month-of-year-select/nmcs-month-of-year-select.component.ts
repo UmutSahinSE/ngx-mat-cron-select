@@ -6,7 +6,7 @@ import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
-import { NGX_MAT_CRON_SELECT_WEEK_FORMAT } from '../../tokens';
+import { NGX_MAT_CRON_SELECT_MONTH_FORMAT, NGX_MAT_CRON_SELECT_WEEK_FORMAT } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { TNmcsValue } from '../nmcs-input.interface';
 
@@ -28,7 +28,7 @@ import { TNmcsValue } from '../nmcs-input.interface';
 })
 export class NmcsMonthOfYearSelectComponent<FormControlValue extends TNmcsValue> {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
-  private readonly monthFormat = inject(NGX_MAT_CRON_SELECT_WEEK_FORMAT, { optional: true });
+  private readonly monthFormat = inject(NGX_MAT_CRON_SELECT_MONTH_FORMAT, { optional: true });
 
   public readonly field = input.required<FieldTree<FormControlValue>>();
   public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();

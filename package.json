@@ -2,7 +2,8 @@
   "name": "ngx-mat-cron-select",
   "version": "0.0.0",
   "scripts": {
-    "pack": "rm -rf dist/ngx-mat-cron-select && ng build && cd dist/ngx-mat-cron-select && npm pack"
+    "pack": "rm -rf dist/ngx-mat-cron-select && ng build && cd dist/ngx-mat-cron-select && npm pack",
+    "test": "ng test"
   },
   "private": true,
   "dependencies": {
