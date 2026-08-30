@@ -2,7 +2,7 @@ import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, effect, inject, input, InputSignal, output, Signal, signal } from '@angular/core';
 import { untracked } from '@angular/core/primitives/signals';
 import { ReactiveFormsModule } from '@angular/forms';
-import { disabled, Field, FieldTree, form, validate } from '@angular/forms/signals';
+import { disabled, Field, FieldTree, FieldValidator, form, validate } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
@@ -29,6 +29,13 @@ const repeatingCheckboxFields = [
   'day',
   'monthOfYear',
 ] as const satisfies (keyof IEveryCheckboxesFormGroupValue)[number][];
+const inputFieldRanges: Record<(typeof inputFields)[number], readonly [number, number]> = {
+  dayOfMonth: [1, 31],
+  dayOfWeek: [0, 6],
+  hour: [0, 23],
+  minute: [0, 59],
+  monthOfYear: [0, 11],
+};
 
 @Component({
   imports: [
@@ -161,12 +168,7 @@ export class NgxMatCronSelectComponent {
   public readonly inputsFormGroup: InputSignal<FieldTree<IInputsFormGroup>> = input(
     form(this.inputsModel, (schema) => {
       for (const fieldName of inputFields) {
-        validate(schema[fieldName], ({ value: valueSig }) => {
-          const isActive = this.getActiveInputsBasedOnActiveTab()[inputFields.indexOf(fieldName)];
-          const value = valueSig();
-
-          return isActive && Boolean(Array.isArray(value) ? value.length : value) ? { kind: 'required' } : null;
-        });
+        validate(schema[fieldName], this.getInputFieldValidator(fieldName));
         disabled(schema[fieldName], this.isInputDisabled[fieldName]);
       }
     }),
@@ -303,17 +305,28 @@ export class NgxMatCronSelectComponent {
   }
 
   private initialize(): void {
-    const initialValue = this.initialValue();
+    const initialValue = this.validateInputCron(this.initialValue());
     const selectedTab = this.selectedTab();
     const inputsFormGroup = this.inputsFormGroup();
     const repeatingCheckboxFormGroup = this.repeatingCheckboxFieldTree();
 
     if (initialValue === null) {
-      this.initializeWithoutStartingValue(inputsFormGroup, repeatingCheckboxFormGroup);
+      if (!inputsFormGroup().valid()) {
+        this.initializeWithoutStartingValue(inputsFormGroup, repeatingCheckboxFormGroup);
+      }
 
       return;
     }
 
+    this.setFormUsingInitialValue(initialValue, inputsFormGroup, repeatingCheckboxFormGroup, selectedTab);
+  }
+
+  private setFormUsingInitialValue(
+    initialValue: string,
+    inputsFormGroup: FieldTree<IInputsFormGroup>,
+    repeatingCheckboxFormGroup: FieldTree<IEveryCheckboxesFormGroupValue>,
+    selectedTab: keyof ITab,
+  ): void {
     const split = initialValue.split(' ');
     const [minute, hour, dayOfMonth, monthOfYear, dayOfWeek] = split;
     const splitAsObject = { dayOfMonth, dayOfWeek, hour, minute, monthOfYear };
@@ -446,10 +459,18 @@ export class NgxMatCronSelectComponent {
       }
 
       const isMulti = Array.isArray(this.inputsFormGroup()[field]().value());
+      const values = isMulti ? split[index].split(',') : [split[index]];
+      const [min, max] = inputFieldRanges[field];
 
-      return isMulti
-        ? typeof Number(split[index]) === 'number'
-        : split[index].split(',').every((val) => typeof Number(val) === 'number');
+      return values.every((val) => {
+        if (val === '' || Number.isNaN(Number(val))) {
+          return false;
+        }
+
+        const num = Number(val);
+
+        return num >= min && num <= max;
+      });
     });
 
     return isValid ? value : null;
@@ -505,6 +526,21 @@ export class NgxMatCronSelectComponent {
     return (['year', 'month', 'week', 'day', 'hour'] as const).find((tab) => this.effectiveVisibleTabs()[tab])!;
   }
 
+  private getInputFieldValidator(fieldName: (typeof inputFields)[number]): FieldValidator<TNmcsValue> {
+    return ({ value: valueSig }) => {
+      const values = this.toNumberArray(valueSig());
+      const isActive = this.getActiveInputsBasedOnActiveTab()[inputFields.indexOf(fieldName)];
+
+      if (isActive && values.length === 0) {
+        return { kind: 'required' };
+      }
+
+      const [min, max] = inputFieldRanges[fieldName];
+
+      return values.every((value) => value >= min && value <= max) ? null : { kind: 'outOfRange' };
+    };
+  }
+
   private getIsInputDisabled(fieldName: keyof IInputsFormGroup): Signal<boolean> {
     return computed(
       () => {
@@ -533,5 +569,9 @@ export class NgxMatCronSelectComponent {
       },
       { equal: () => false },
     );
+  }
+
+  private toNumberArray(value: TNmcsValue): number[] {
+    return Array.isArray(value) ? value : value === null ? [] : [value];
   }
 }

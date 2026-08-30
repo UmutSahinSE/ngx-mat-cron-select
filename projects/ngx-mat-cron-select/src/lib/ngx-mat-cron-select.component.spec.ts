@@ -1,7 +1,9 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { form } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NgxMatCronSelectComponent } from './ngx-mat-cron-select.component';
-import { IEveryCheckboxesFormGroupValue, ITab } from './ngx-mat-cron-select.interface';
+import { IEveryCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-mat-cron-select.interface';
 
 const allVisibleTabs: ITab = { day: true, hour: true, month: true, week: true, year: true };
 const allVisibleCheckboxes: IEveryCheckboxesFormGroupValue = {
@@ -191,18 +193,45 @@ describe('NgxMatCronSelectComponent', () => {
       expect(component.inputsFormGroup().dayOfWeek().value()).toEqual([3]);
     });
 
-    it('ignores an initialValue with the wrong number of fields (suspected bug: validateInputCron is dead code)', () => {
+    it('ignores an initialValue with the wrong number of fields', () => {
       const fixture = createFixture({ initialValue: '30 5 1' });
       const component = fixture.componentInstance;
 
       expect(component.inputsFormGroup().minute().value()).toEqual([]);
     });
 
-    it('ignores an initialValue with a non-numeric field (suspected bug: validateInputCron is dead code)', () => {
+    it('ignores an initialValue with a non-numeric field', () => {
       const fixture = createFixture({ initialValue: 'not-a-number 5 1 1 3' });
       const component = fixture.componentInstance;
 
       expect(component.inputsFormGroup().minute().value()).toEqual([]);
+    });
+
+    it('ignores an initialValue with an out-of-range field (e.g. day-of-week 9)', () => {
+      const fixture = createFixture({ initialValue: '30 5 1 1 9' });
+      const component = fixture.componentInstance;
+
+      expect(component.inputsFormGroup().minute().value()).toEqual([]);
+      expect(component.inputsFormGroup().dayOfWeek().value()).toEqual([]);
+    });
+  });
+
+  describe('using a consumer-provided inputsFormGroup', () => {
+    it("keeps a consumer-provided inputsFormGroup's pre-populated values when initialValue is not set", () => {
+      TestBed.configureTestingModule({
+        imports: [NgxMatCronSelectComponent],
+        providers: [provideNativeDateAdapter()],
+      });
+      const fixture = TestBed.createComponent(NgxMatCronSelectComponent);
+      const customInputsFormGroup = TestBed.runInInjectionContext(() =>
+        form(signal<IInputsFormGroup>({ dayOfMonth: [], dayOfWeek: [], hour: [], minute: [15], monthOfYear: [] })),
+      );
+
+      fixture.componentRef.setInput('initialTab', 'hour');
+      fixture.componentRef.setInput('inputsFormGroup', customInputsFormGroup);
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.inputsFormGroup().minute().value()).toEqual([15]);
     });
   });
 
@@ -263,6 +292,57 @@ describe('NgxMatCronSelectComponent', () => {
 
         expect(value === null || cronPattern.test(value!)).toBeTrue();
       }
+    });
+  });
+
+  describe('logical range validation on inputsFormGroup', () => {
+    it('rejects an out-of-range day-of-week value (e.g. 9)', () => {
+      const fixture = createFixture({ initialTab: 'week' });
+      const component = fixture.componentInstance;
+
+      component.inputsFormGroup().minute().value.set([30]);
+      component.inputsFormGroup().hour().value.set([5]);
+      component.inputsFormGroup().dayOfWeek().value.set([9]);
+      fixture.detectChanges();
+
+      expect(component.inputsFormGroup()().valid()).toBeFalse();
+      expect(component.value()).toBeNull();
+    });
+
+    it('accepts an in-range day-of-week value (0-6)', () => {
+      const fixture = createFixture({ initialTab: 'week' });
+      const component = fixture.componentInstance;
+
+      component.inputsFormGroup().minute().value.set([30]);
+      component.inputsFormGroup().hour().value.set([5]);
+      component.inputsFormGroup().dayOfWeek().value.set([3]);
+      fixture.detectChanges();
+
+      expect(component.inputsFormGroup()().valid()).toBeTrue();
+      expect(component.value()).toBe('30 5 * * 3');
+    });
+
+    it('rejects an out-of-range minute value (e.g. 70)', () => {
+      const fixture = createFixture({ initialTab: 'hour' });
+      const component = fixture.componentInstance;
+
+      component.inputsFormGroup().minute().value.set([70]);
+      fixture.detectChanges();
+
+      expect(component.inputsFormGroup()().valid()).toBeFalse();
+      expect(component.value()).toBeNull();
+    });
+
+    it('does not validate range on a disabled (checkbox-checked) field', () => {
+      const fixture = createFixture({ initialTab: 'hour' });
+      const component = fixture.componentInstance;
+
+      component.repeatingCheckboxFieldTree().minute().value.set(true);
+      fixture.detectChanges();
+
+      expect(component.inputsFormGroup().minute().disabled()).toBeTrue();
+      expect(component.inputsFormGroup().minute().errors()).toEqual([]);
+      expect(component.inputsFormGroup()().valid()).toBeTrue();
     });
   });
 
