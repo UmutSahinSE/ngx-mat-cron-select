@@ -115,7 +115,7 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue> implem
       this.dateFieldTree.set(
         form(this.dateField, (schema) => {
           required(schema);
-          disabled(schema, this.field()().disabled);
+          disabled(schema, { when: this.field()().disabled });
         }),
       );
 

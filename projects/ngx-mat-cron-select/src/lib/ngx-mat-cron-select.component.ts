@@ -178,7 +178,7 @@ export class NgxMatCronSelectComponent {
   public readonly repeatingCheckboxFieldTree: InputSignal<FieldTree<IEveryCheckboxesFormGroupValue>> = input(
     form(this.repeatingCheckboxesModel, (schema) => {
       for (const fieldName of repeatingCheckboxFields) {
-        disabled(schema[fieldName], this.isCheckboxDisabled[fieldName]);
+        disabled(schema[fieldName], { when: this.isCheckboxDisabled[fieldName] });
       }
     }),
   );
@@ -187,7 +187,7 @@ export class NgxMatCronSelectComponent {
     form(this.inputsModel, (schema) => {
       for (const fieldName of inputFields) {
         validate(schema[fieldName], this.getInputFieldValidator(fieldName));
-        disabled(schema[fieldName], this.isInputDisabled[fieldName]);
+        disabled(schema[fieldName], { when: this.isInputDisabled[fieldName] });
       }
     }),
   );
