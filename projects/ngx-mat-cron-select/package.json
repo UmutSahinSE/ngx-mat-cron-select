@@ -4,10 +4,10 @@
   "description": "Provides an interface to modify cron digit values using Angular Material inputs.",
   "license": "MIT",
   "peerDependencies": {
-    "@angular/common": ">=21.0.0",
-    "@angular/core": ">=21.0.0",
-    "@angular/material": ">=21.0.0",
-    "@angular/forms": ">=21.0.0",
+    "@angular/common": ">=22.0.0",
+    "@angular/core": ">=22.0.0",
+    "@angular/material": ">=22.0.0",
+    "@angular/forms": ">=22.0.0",
     "rxjs": ">=6.0.0"
   },
   "repository": {

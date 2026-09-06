@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, computed, forwardRef, inject, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { Field, FieldTree } from '@angular/forms/signals';
+import { Field, FieldTree, FormField } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatError, MatFormField, MatLabel } from '@angular/material/input';
@@ -22,7 +22,7 @@ import { TNmcsValue } from '../nmcs-input.interface';
     MatError,
     AsyncPipe,
     MatCheckbox,
-    Field,
+    FormField,
   ],
   providers: [
     {
@@ -39,7 +39,7 @@ export class NmcsDayOfWeekSelectComponent<FormControlValue extends TNmcsValue> {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
   private readonly weekFormat = inject(NGX_MAT_CRON_SELECT_WEEK_FORMAT, { optional: true });
 
-  public readonly field = input.required<FieldTree<FormControlValue>>();
+  public readonly field = input.required<Field<FormControlValue>>();
   public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
   public readonly isCheckboxVisible = input.required<boolean>();
   public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));

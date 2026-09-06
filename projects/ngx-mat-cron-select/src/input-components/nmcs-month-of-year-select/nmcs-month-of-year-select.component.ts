@@ -1,12 +1,12 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Field, FieldTree } from '@angular/forms/signals';
+import { Field, FieldTree, FormField } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormField, MatLabel } from '@angular/material/input';
 import { MatSelect } from '@angular/material/select';
-import { NGX_MAT_CRON_SELECT_MONTH_FORMAT, NGX_MAT_CRON_SELECT_WEEK_FORMAT } from '../../tokens';
+import { NGX_MAT_CRON_SELECT_MONTH_FORMAT } from '../../tokens';
 import { TranslateOrUseDefaultPipe } from '../../translate-or-use-default.pipe';
 import { TNmcsValue } from '../nmcs-input.interface';
 
@@ -20,7 +20,7 @@ import { TNmcsValue } from '../nmcs-input.interface';
     MatOption,
     AsyncPipe,
     MatCheckbox,
-    Field,
+    FormField,
   ],
   selector: 'nmcs-month-of-year-select',
   styleUrl: './nmcs-month-of-year-select.component.scss',
@@ -30,11 +30,12 @@ export class NmcsMonthOfYearSelectComponent<FormControlValue extends TNmcsValue>
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
   private readonly monthFormat = inject(NGX_MAT_CRON_SELECT_MONTH_FORMAT, { optional: true });
 
-  public readonly field = input.required<FieldTree<FormControlValue>>();
+  public readonly field = input.required<Field<FormControlValue>>();
   public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
   public readonly isCheckboxVisible = input.required<boolean>();
 
   public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));
+
   protected readonly options = this.prepareOrderedOptions();
 
   private prepareOrderedOptions(): { cronValue: number; label: string }[] {

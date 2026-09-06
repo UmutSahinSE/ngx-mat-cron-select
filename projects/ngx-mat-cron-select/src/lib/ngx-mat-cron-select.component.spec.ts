@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { form } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
@@ -8,6 +8,7 @@ import { IEveryCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-ma
 
 @Component({
   imports: [NgxMatCronSelectComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <ngx-mat-cron-select [initialValue]="cronValue()" (valueChange)="cronValue.set($event)"></ngx-mat-cron-select>
   `,

@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, computed, forwardRef, input } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { Field, FieldTree } from '@angular/forms/signals';
+import { Field, FieldTree, FormField } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatError } from '@angular/material/input';
@@ -20,7 +20,7 @@ import { TNmcsValue } from '../nmcs-input.interface';
     ReactiveFormsModule,
     AsyncPipe,
     MatCheckbox,
-    Field,
+    FormField,
   ],
   providers: [
     {
@@ -34,7 +34,7 @@ import { TNmcsValue } from '../nmcs-input.interface';
   templateUrl: './nmcs-day-of-month-select.component.html',
 })
 export class NmcsDayOfMonthSelectComponent<FormControlValue extends TNmcsValue> {
-  public readonly field = input.required<FieldTree<FormControlValue>>();
+  public readonly field = input.required<Field<FormControlValue>>();
   public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
   public readonly isCheckboxVisible = input.required<boolean>();
 

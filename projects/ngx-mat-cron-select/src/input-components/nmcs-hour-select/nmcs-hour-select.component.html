@@ -5,7 +5,7 @@
   @if (isMultiselect()) {
     <mat-form-field subscriptSizing="dynamic">
       <mat-label>{{ 'hourSelectLabel' | translateOrUseDefault | async }}</mat-label>
-      <mat-select [field]="field()" multiple>
+      <mat-select [formField]="field()" multiple>
         @for (hourOption of hourOptions(); track hourOption) {
           <mat-option [value]="hourOption.id">{{ hourOption.name }}</mat-option>
         }
@@ -15,7 +15,7 @@
   } @else if (dateFieldTreeIfExists) {
     <mat-form-field subscriptSizing="dynamic">
       <mat-label>{{ 'hourSelectLabel' | translateOrUseDefault | async }}</mat-label>
-      <input matInput [field]="dateFieldTreeIfExists" [matTimepicker]="picker" />
+      <input matInput [formField]="dateFieldTreeIfExists" [matTimepicker]="picker" />
       <mat-timepicker-toggle matIconSuffix [for]="picker" />
       <mat-timepicker #picker />
       <mat-error></mat-error>
@@ -24,7 +24,7 @@
 
   @if (isCheckboxVisible() && checkboxFieldTreeIfExists) {
     <section>
-      <mat-checkbox [field]="checkboxFieldTreeIfExists">{{
+      <mat-checkbox [formField]="checkboxFieldTreeIfExists">{{
         'everyHourLabel' | translateOrUseDefault | async
       }}</mat-checkbox>
     </section>

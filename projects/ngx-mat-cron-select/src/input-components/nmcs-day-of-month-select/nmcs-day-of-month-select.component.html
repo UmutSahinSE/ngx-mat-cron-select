@@ -3,7 +3,7 @@
 <div class="nmcs-day-of-month-select">
   <mat-form-field subscriptSizing="dynamic">
     <mat-label>{{ 'dayOfMonthSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [field]="field()" [multiple]="isMultiselect()">
+    <mat-select [formField]="field()" [multiple]="isMultiselect()">
       @for (option of options; track option) {
         <mat-option [value]="option">{{ option }}</mat-option>
       }
@@ -13,7 +13,7 @@
 
   @if (isCheckboxVisible() && checkboxField) {
     <section>
-      <mat-checkbox [field]="checkboxField">{{ 'everyDayLabel' | translateOrUseDefault | async }}</mat-checkbox>
+      <mat-checkbox [formField]="checkboxField">{{ 'everyDayLabel' | translateOrUseDefault | async }}</mat-checkbox>
     </section>
   }
 </div>

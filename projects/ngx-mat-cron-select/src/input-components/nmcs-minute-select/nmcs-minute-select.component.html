@@ -3,7 +3,7 @@
 <div class="nmcs-minute-select">
   <mat-form-field subscriptSizing="dynamic">
     <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [field]="field()" [multiple]="isMultiselect()">
+    <mat-select [formField]="field()" [multiple]="isMultiselect()">
       @for (minuteOption of minuteOptions; track minuteOption) {
         <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
       }
@@ -13,7 +13,7 @@
 
   @if (isCheckboxVisible() && checkboxField) {
     <section>
-      <mat-checkbox [field]="checkboxField">{{ 'everyMinuteLabel' | translateOrUseDefault | async }}</mat-checkbox>
+      <mat-checkbox [formField]="checkboxField">{{ 'everyMinuteLabel' | translateOrUseDefault | async }}</mat-checkbox>
     </section>
   }
 </div>

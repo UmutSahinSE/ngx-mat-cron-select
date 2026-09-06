@@ -13,7 +13,7 @@ import {
   Signal,
 } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { disabled, Field, FieldTree, form, required } from '@angular/forms/signals';
+import { disabled, Field, FieldTree, form, FormField, required } from '@angular/forms/signals';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { MAT_DATE_LOCALE, MatOption } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -47,7 +47,7 @@ import { TNmcsValue } from '../nmcs-input.interface';
     MatSelect,
     AsyncPipe,
     MatCheckbox,
-    Field,
+    FormField,
   ],
   providers: [
     {
@@ -64,7 +64,7 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue> implem
   private readonly isTwelveHour = inject<Signal<boolean>>(NGX_MAT_CRON_SELECT_IS_TWELVE_HOUR, { optional: true });
   private readonly injector = inject(Injector);
 
-  public readonly field = input.required<FieldTree<FormControlValue>>();
+  public readonly field = input.required<Field<FormControlValue>>();
   public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
   public readonly isCheckboxVisible = input.required<boolean>();
 
@@ -132,8 +132,9 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue> implem
       }
 
       const hour = dateFieldValue?.getHours() ?? null;
-      // @ts-ignore
-      this.field()().setControlValue(hour as FormControlValue);
+      const controlValue = this.field()().controlValue as { set: (value: FormControlValue) => void };
+
+      controlValue.set(hour as FormControlValue);
     });
   }
 

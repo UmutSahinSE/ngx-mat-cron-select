@@ -1,8 +1,18 @@
 import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, inject, input, InputSignal, output, Signal, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  InputSignal,
+  output,
+  Signal,
+  signal,
+} from '@angular/core';
 import { untracked } from '@angular/core/primitives/signals';
 import { ReactiveFormsModule } from '@angular/forms';
-import { disabled, Field, FieldTree, FieldValidator, form, validate } from '@angular/forms/signals';
+import { disabled, FieldTree, FieldValidator, form, validate } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
@@ -53,7 +63,6 @@ const inputFieldRanges: Record<(typeof inputFields)[number], readonly [number, n
     NmcsMonthOfYearSelectComponent,
     NmcsDayOfMonthSelectComponent,
     AsyncPipe,
-    Field,
   ],
   selector: 'ngx-mat-cron-select',
   styleUrls: ['./ngx-mat-cron-select.component.scss'],
