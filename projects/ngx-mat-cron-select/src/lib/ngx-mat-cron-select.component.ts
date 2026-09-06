@@ -13,6 +13,7 @@ import { NmcsHourSelectComponent } from '../input-components/nmcs-hour-select/nm
 import { TNmcsValue } from '../input-components/nmcs-input.interface';
 import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-select/nmcs-minute-select.component';
 import { NmcsMonthOfYearSelectComponent } from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
+import { NGX_MAT_CRON_SELECT_TAB_ANIMATIONS_DISABLED } from '../tokens';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
 import { IEveryCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-mat-cron-select.interface';
 
@@ -60,6 +61,10 @@ const inputFieldRanges: Record<(typeof inputFields)[number], readonly [number, n
 })
 export class NgxMatCronSelectComponent {
   private readonly matDateLocale = inject<string>(MAT_DATE_LOCALE, { optional: true });
+  private readonly areTabAnimationsDisabled = inject(NGX_MAT_CRON_SELECT_TAB_ANIMATIONS_DISABLED, {
+    optional: true,
+  });
+  protected readonly tabAnimationDuration = this.areTabAnimationsDisabled ? '0ms' : '500ms';
 
   public readonly initialTab = input<keyof ITab>('year');
   private readonly inputsModel = signal<IInputsFormGroup>({
@@ -214,10 +219,14 @@ export class NgxMatCronSelectComponent {
   });
 
   private previousValue: string | null = null;
+  private previousActiveCheckboxes: readonly boolean[] | null = null;
+  private previousInputsFormGroup: FieldTree<IInputsFormGroup> | undefined = undefined;
+  private previousRepeatingCheckboxFieldTree: FieldTree<IEveryCheckboxesFormGroupValue> | undefined = undefined;
 
   constructor() {
     this.registerFormControlInitialization();
     this.registerOnChangeCall();
+    this.registerCheckboxAutoCheckOnTabSwitch();
   }
 
   public setTab(tabIndex: number): void {
@@ -244,11 +253,52 @@ export class NgxMatCronSelectComponent {
     });
   }
 
+  private registerCheckboxAutoCheckOnTabSwitch(): void {
+    effect(() => {
+      if (this.initializationChecklist.settingSymbol() !== this.initializationChecklist.initializationDone()) {
+        return;
+      }
+
+      const activeCheckboxes = this.getActiveCheckboxesBasedOnActiveTab();
+      const { previousActiveCheckboxes } = this;
+      this.previousActiveCheckboxes = activeCheckboxes;
+
+      if (previousActiveCheckboxes === null) {
+        return;
+      }
+
+      const repeatingCheckboxFormGroup = this.repeatingCheckboxFieldTree();
+
+      repeatingCheckboxFields.forEach((fieldName, index) => {
+        if (activeCheckboxes[index] && !previousActiveCheckboxes[index]) {
+          repeatingCheckboxFormGroup[fieldName]().value.set(true);
+        }
+      });
+    });
+  }
+
   private registerFormControlInitialization(): void {
     effect(() => {
-      this.initialValue();
-      this.inputsFormGroup();
-      this.repeatingCheckboxFieldTree();
+      const initialValue = this.initialValue();
+      const inputsFormGroup = this.inputsFormGroup();
+      const repeatingCheckboxFieldTree = this.repeatingCheckboxFieldTree();
+
+      const haveFormTreesBeenReassigned =
+        inputsFormGroup !== this.previousInputsFormGroup ||
+        repeatingCheckboxFieldTree !== this.previousRepeatingCheckboxFieldTree;
+
+      this.previousInputsFormGroup = inputsFormGroup;
+      this.previousRepeatingCheckboxFieldTree = repeatingCheckboxFieldTree;
+
+      const isInitialValueEchoingLastEmittedValue = untracked(
+        () => this.initializationChecklist.initializationDone() !== null && initialValue === this.previousValue,
+      );
+
+      if (!haveFormTreesBeenReassigned && isInitialValueEchoingLastEmittedValue) {
+        return;
+      }
+
+      this.previousActiveCheckboxes = null;
       this.initializationChecklist.settingSymbol.set(Symbol());
     });
 

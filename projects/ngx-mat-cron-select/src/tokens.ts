@@ -16,3 +16,7 @@ export const NGX_MAT_CRON_SELECT_MONTH_FORMAT = new InjectionToken<'long' | 'sho
 export const NGX_MAT_CRON_SELECT_TRANSLATE_SERVICE = new InjectionToken<{
   stream: (key: string) => Observable<string | any>;
 }>('ngx-mat-cron-select/TRANSLATE_SERVICE');
+
+export const NGX_MAT_CRON_SELECT_TAB_ANIMATIONS_DISABLED = new InjectionToken<boolean>(
+  'ngx-mat-cron-select/TAB_ANIMATIONS_DISABLED',
+);

@@ -6,7 +6,11 @@
     <ng-template [ngTemplateOutlet]="monthTab"></ng-template>
     <ng-template [ngTemplateOutlet]="yearTab"></ng-template>
   } @else {
-    <mat-tab-group [selectedIndex]="selectedTabIndex()" (selectedIndexChange)="setTab($event)">
+    <mat-tab-group
+      [animationDuration]="tabAnimationDuration"
+      [selectedIndex]="selectedTabIndex()"
+      (selectedIndexChange)="setTab($event)"
+    >
       @if (effectiveVisibleTabs().hour) {
         <mat-tab [disabled]="isDisabled()" [label]="('tabLabelHour' | translateOrUseDefault | async) ?? ''">
           <ng-template [ngTemplateOutlet]="hourTab"></ng-template>

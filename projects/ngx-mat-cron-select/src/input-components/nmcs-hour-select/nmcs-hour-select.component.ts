@@ -132,7 +132,7 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue> implem
       }
 
       const hour = dateFieldValue?.getHours() ?? null;
-      // @ts-ignore TODO
+      // @ts-ignore
       this.field()().setControlValue(hour as FormControlValue);
     });
   }
