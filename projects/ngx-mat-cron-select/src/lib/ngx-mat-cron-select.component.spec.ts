@@ -186,15 +186,15 @@ describe('NgxMatCronSelectComponent', () => {
       const component = fixture.componentInstance;
 
       expect(component.value()).toBe('* * * * *');
-      expect(component.repeatingCheckboxFieldTree().minute().value()).toBeTrue();
+      expect(component.repeatingCheckboxForm().minute().value()).toBeTrue();
     });
 
     it('resets to the empty state when initialValue is null', () => {
       const fixture = createFixture({ initialValue: null });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().minute().value()).toEqual([]);
-      expect(component.repeatingCheckboxFieldTree().minute().value()).toBeFalse();
+      expect(component.inputsForm().minute().value()).toEqual([]);
+      expect(component.repeatingCheckboxForm().minute().value()).toBeFalse();
     });
 
     it('populates every field from a fully-specified cron string, including fields inactive for the resolved tab', () => {
@@ -202,38 +202,38 @@ describe('NgxMatCronSelectComponent', () => {
       const component = fixture.componentInstance;
 
       expect(selectedTab(fixture)).toBe('year');
-      expect(component.inputsFormGroup().minute().value()).toEqual([30]);
-      expect(component.inputsFormGroup().hour().value()).toEqual([5]);
-      expect(component.inputsFormGroup().dayOfMonth().value()).toEqual([1]);
-      expect(component.inputsFormGroup().monthOfYear().value()).toEqual([1]);
-      expect(component.inputsFormGroup().dayOfWeek().value()).toEqual([3]);
+      expect(component.inputsForm().minute().value()).toEqual([30]);
+      expect(component.inputsForm().hour().value()).toEqual([5]);
+      expect(component.inputsForm().dayOfMonth().value()).toEqual([1]);
+      expect(component.inputsForm().monthOfYear().value()).toEqual([1]);
+      expect(component.inputsForm().dayOfWeek().value()).toEqual([3]);
     });
 
     it('ignores an initialValue with the wrong number of fields', () => {
       const fixture = createFixture({ initialValue: '30 5 1' });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().minute().value()).toEqual([]);
+      expect(component.inputsForm().minute().value()).toEqual([]);
     });
 
     it('ignores an initialValue with a non-numeric field', () => {
       const fixture = createFixture({ initialValue: 'not-a-number 5 1 1 3' });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().minute().value()).toEqual([]);
+      expect(component.inputsForm().minute().value()).toEqual([]);
     });
 
     it('ignores an initialValue with an out-of-range field (e.g. day-of-week 9)', () => {
       const fixture = createFixture({ initialValue: '30 5 1 1 9' });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().minute().value()).toEqual([]);
-      expect(component.inputsFormGroup().dayOfWeek().value()).toEqual([]);
+      expect(component.inputsForm().minute().value()).toEqual([]);
+      expect(component.inputsForm().dayOfWeek().value()).toEqual([]);
     });
   });
 
-  describe('using a consumer-provided inputsFormGroup', () => {
-    it("keeps a consumer-provided inputsFormGroup's pre-populated values when initialValue is not set", () => {
+  describe('using a consumer-provided inputsForm', () => {
+    it("keeps a consumer-provided inputsForm's pre-populated values when initialValue is not set", () => {
       TestBed.configureTestingModule({
         imports: [NgxMatCronSelectComponent],
         providers: [provideNativeDateAdapter()],
@@ -244,10 +244,10 @@ describe('NgxMatCronSelectComponent', () => {
       );
 
       fixture.componentRef.setInput('initialTab', 'hour');
-      fixture.componentRef.setInput('inputsFormGroup', customInputsFormGroup);
+      fixture.componentRef.setInput('inputsForm', customInputsFormGroup);
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.inputsFormGroup().minute().value()).toEqual([15]);
+      expect(fixture.componentInstance.inputsForm().minute().value()).toEqual([15]);
     });
   });
 
@@ -255,12 +255,12 @@ describe('NgxMatCronSelectComponent', () => {
     it('re-initializes when initialValue changes after creation', () => {
       const fixture = createFixture({ initialValue: '30 * * * *' });
 
-      expect(fixture.componentInstance.inputsFormGroup().minute().value()).toEqual([30]);
+      expect(fixture.componentInstance.inputsForm().minute().value()).toEqual([30]);
 
       fixture.componentRef.setInput('initialValue', '45 * * * *');
       fixture.detectChanges();
 
-      expect(fixture.componentInstance.inputsFormGroup().minute().value()).toEqual([45]);
+      expect(fixture.componentInstance.inputsForm().minute().value()).toEqual([45]);
     });
 
     it('does not wipe the form when a consumer feeds valueChange back into initialValue and a tab switch transiently makes the output null', () => {
@@ -272,15 +272,15 @@ describe('NgxMatCronSelectComponent', () => {
       hostFixture.detectChanges();
       const cronSelect = hostFixture.debugElement.children[0].componentInstance as NgxMatCronSelectComponent;
 
-      expect(cronSelect.inputsFormGroup().minute().value()).toEqual([1]);
-      expect(cronSelect.inputsFormGroup().dayOfMonth().value()).toEqual([3]);
+      expect(cronSelect.inputsForm().minute().value()).toEqual([1]);
+      expect(cronSelect.inputsForm().dayOfMonth().value()).toEqual([3]);
 
       cronSelect.setTab(2); // week — dayOfWeek becomes active and empty, making value() (and thus initialValue) null
       hostFixture.detectChanges();
 
       expect(hostFixture.componentInstance.cronValue()).toBeNull();
-      expect(cronSelect.inputsFormGroup().minute().value()).toEqual([1]);
-      expect(cronSelect.inputsFormGroup().dayOfMonth().value()).toEqual([3]);
+      expect(cronSelect.inputsForm().minute().value()).toEqual([1]);
+      expect(cronSelect.inputsForm().dayOfMonth().value()).toEqual([3]);
     });
 
     it('still re-initializes when the consumer loads a genuinely different initialValue, even with the feedback binding in place', () => {
@@ -295,8 +295,8 @@ describe('NgxMatCronSelectComponent', () => {
       hostFixture.componentInstance.cronValue.set('5 10 * * *');
       hostFixture.detectChanges();
 
-      expect(cronSelect.inputsFormGroup().minute().value()).toEqual([5]);
-      expect(cronSelect.inputsFormGroup().hour().value()).toEqual([10]);
+      expect(cronSelect.inputsForm().minute().value()).toEqual([5]);
+      expect(cronSelect.inputsForm().hour().value()).toEqual([10]);
     });
   });
 
@@ -305,7 +305,7 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.inputsFormGroup().minute().value.set([5]);
+      component.inputsForm().minute().value.set([5]);
       fixture.detectChanges();
 
       expect(component.value()).toBe('5 * * * *');
@@ -315,7 +315,7 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.inputsFormGroup().minute().value.set([5, 1, 10]);
+      component.inputsForm().minute().value.set([5, 1, 10]);
       fixture.detectChanges();
 
       expect(component.value()).toBe('1,5,10 * * * *');
@@ -325,7 +325,7 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.repeatingCheckboxFieldTree().minute().value.set(true);
+      component.repeatingCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
 
       expect(component.value()).toBe('* * * * *');
@@ -337,7 +337,7 @@ describe('NgxMatCronSelectComponent', () => {
       const cronPattern = /^(\*|\d+(,\d+)*) (\*|\d+(,\d+)*) (\*|\d+(,\d+)*) (\*|\d+(,\d+)*) (\*|\d+(,\d+)*)$/;
 
       for (const minuteValue of [[], [5], [5, 1]]) {
-        component.inputsFormGroup().minute().value.set(minuteValue);
+        component.inputsForm().minute().value.set(minuteValue);
         fixture.detectChanges();
 
         const value = component.value();
@@ -347,17 +347,17 @@ describe('NgxMatCronSelectComponent', () => {
     });
   });
 
-  describe('logical range validation on inputsFormGroup', () => {
+  describe('logical range validation on inputsForm', () => {
     it('rejects an out-of-range day-of-week value (e.g. 9)', () => {
       const fixture = createFixture({ initialTab: 'week' });
       const component = fixture.componentInstance;
 
-      component.inputsFormGroup().minute().value.set([30]);
-      component.inputsFormGroup().hour().value.set([5]);
-      component.inputsFormGroup().dayOfWeek().value.set([9]);
+      component.inputsForm().minute().value.set([30]);
+      component.inputsForm().hour().value.set([5]);
+      component.inputsForm().dayOfWeek().value.set([9]);
       fixture.detectChanges();
 
-      expect(component.inputsFormGroup()().valid()).toBeFalse();
+      expect(component.inputsForm()().valid()).toBeFalse();
       expect(component.value()).toBeNull();
     });
 
@@ -365,12 +365,12 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'week' });
       const component = fixture.componentInstance;
 
-      component.inputsFormGroup().minute().value.set([30]);
-      component.inputsFormGroup().hour().value.set([5]);
-      component.inputsFormGroup().dayOfWeek().value.set([3]);
+      component.inputsForm().minute().value.set([30]);
+      component.inputsForm().hour().value.set([5]);
+      component.inputsForm().dayOfWeek().value.set([3]);
       fixture.detectChanges();
 
-      expect(component.inputsFormGroup()().valid()).toBeTrue();
+      expect(component.inputsForm()().valid()).toBeTrue();
       expect(component.value()).toBe('30 5 * * 3');
     });
 
@@ -378,10 +378,10 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.inputsFormGroup().minute().value.set([70]);
+      component.inputsForm().minute().value.set([70]);
       fixture.detectChanges();
 
-      expect(component.inputsFormGroup()().valid()).toBeFalse();
+      expect(component.inputsForm()().valid()).toBeFalse();
       expect(component.value()).toBeNull();
     });
 
@@ -389,12 +389,12 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.repeatingCheckboxFieldTree().minute().value.set(true);
+      component.repeatingCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
 
-      expect(component.inputsFormGroup().minute().disabled()).toBeTrue();
-      expect(component.inputsFormGroup().minute().errors()).toEqual([]);
-      expect(component.inputsFormGroup()().valid()).toBeTrue();
+      expect(component.inputsForm().minute().disabled()).toBeTrue();
+      expect(component.inputsForm().minute().errors()).toEqual([]);
+      expect(component.inputsForm()().valid()).toBeTrue();
     });
   });
 
@@ -403,24 +403,24 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'year', isDisabled: true });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().minute().disabled()).toBeTrue();
-      expect(component.inputsFormGroup().hour().disabled()).toBeTrue();
-      expect(component.repeatingCheckboxFieldTree().minute().disabled()).toBeTrue();
+      expect(component.inputsForm().minute().disabled()).toBeTrue();
+      expect(component.inputsForm().hour().disabled()).toBeTrue();
+      expect(component.repeatingCheckboxForm().minute().disabled()).toBeTrue();
     });
 
     it('disables a field once its owning "every" checkbox is checked, and re-enables it when unchecked', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().minute().disabled()).toBeFalse();
+      expect(component.inputsForm().minute().disabled()).toBeFalse();
 
-      component.repeatingCheckboxFieldTree().minute().value.set(true);
+      component.repeatingCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
-      expect(component.inputsFormGroup().minute().disabled()).toBeTrue();
+      expect(component.inputsForm().minute().disabled()).toBeTrue();
 
-      component.repeatingCheckboxFieldTree().minute().value.set(false);
+      component.repeatingCheckboxForm().minute().value.set(false);
       fixture.detectChanges();
-      expect(component.inputsFormGroup().minute().disabled()).toBeFalse();
+      expect(component.inputsForm().minute().disabled()).toBeFalse();
     });
 
     it('disables a checkbox not visible via repeatingCheckboxesVisibility', () => {
@@ -429,26 +429,26 @@ describe('NgxMatCronSelectComponent', () => {
         repeatingCheckboxesVisibility: { minute: false },
       });
 
-      expect(fixture.componentInstance.repeatingCheckboxFieldTree().minute().disabled()).toBeTrue();
+      expect(fixture.componentInstance.repeatingCheckboxForm().minute().disabled()).toBeTrue();
     });
 
     it('disables fields that are inactive for the currently selected tab, and re-enables them once their auto-checked checkbox is unchecked', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      expect(component.inputsFormGroup().dayOfMonth().disabled()).toBeTrue();
+      expect(component.inputsForm().dayOfMonth().disabled()).toBeTrue();
 
       fixture.componentInstance.setTab(4);
       fixture.detectChanges();
 
       // dayOfMonth is now active, but its checkbox was auto-checked on reveal (see "tab-switch side effects"
       // below), so it stays disabled until the user unchecks it.
-      expect(component.inputsFormGroup().dayOfMonth().disabled()).toBeTrue();
+      expect(component.inputsForm().dayOfMonth().disabled()).toBeTrue();
 
-      component.repeatingCheckboxFieldTree().day().value.set(false);
+      component.repeatingCheckboxForm().day().value.set(false);
       fixture.detectChanges();
 
-      expect(component.inputsFormGroup().dayOfMonth().disabled()).toBeFalse();
+      expect(component.inputsForm().dayOfMonth().disabled()).toBeFalse();
     });
   });
 
@@ -458,7 +458,7 @@ describe('NgxMatCronSelectComponent', () => {
       const emitted: (string | null)[] = [];
       fixture.componentInstance.valueChange.subscribe((value) => emitted.push(value));
 
-      fixture.componentInstance.repeatingCheckboxFieldTree().minute().value.set(true);
+      fixture.componentInstance.repeatingCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
 
       expect(emitted).toEqual(['* * * * *']);
@@ -479,10 +479,10 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'year' });
       const component = fixture.componentInstance;
 
-      component.inputsFormGroup().minute().value.set([5]);
-      component.inputsFormGroup().hour().value.set([10]);
-      component.inputsFormGroup().dayOfMonth().value.set([15]);
-      component.inputsFormGroup().monthOfYear().value.set([3]);
+      component.inputsForm().minute().value.set([5]);
+      component.inputsForm().hour().value.set([10]);
+      component.inputsForm().dayOfMonth().value.set([15]);
+      component.inputsForm().monthOfYear().value.set([3]);
       fixture.detectChanges();
 
       expect(component.value()).toBe('5 10 15 3 *');
@@ -511,7 +511,7 @@ describe('NgxMatCronSelectComponent', () => {
       fixture.detectChanges();
 
       expect(selectedTab(fixture)).toBe('week');
-      expect(component.repeatingCheckboxFieldTree().day().value()).toBeTrue();
+      expect(component.repeatingCheckboxForm().day().value()).toBeTrue();
     });
   });
 

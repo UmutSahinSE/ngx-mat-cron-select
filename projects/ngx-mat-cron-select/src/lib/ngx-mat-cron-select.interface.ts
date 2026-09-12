@@ -1,3 +1,5 @@
+import { FormControl } from '@angular/forms';
+import { SchemaOrSchemaFn } from '@angular/forms/signals';
 import { TNmcsValue } from '../input-components/nmcs-input.interface';
 
 export interface ITab {
@@ -32,4 +34,32 @@ export interface IInputsFormGroup {
   hour: TNmcsValue;
   minute: TNmcsValue;
   monthOfYear: TNmcsValue;
+}
+
+export interface ICompatInputsFormGroup {
+  dayOfMonth: FormControl<TNmcsValue>;
+  dayOfWeek: FormControl<TNmcsValue>;
+  hour: FormControl<TNmcsValue>;
+  minute: FormControl<TNmcsValue>;
+  monthOfYear: FormControl<TNmcsValue>;
+}
+
+/**
+ * Extra schema logic to layer on top of NgxMatCronSelectComponent's own inputsForm rules, passed to
+ * createInputsSchema(). `fields` targets one or more specific fields; `form` receives the whole schema, e.g. for
+ * cross-field rules.
+ */
+export interface IInputsSchemaCustomization {
+  fields?: Partial<Record<keyof IInputsFormGroup, SchemaOrSchemaFn<TNmcsValue>>>;
+  form?: SchemaOrSchemaFn<IInputsFormGroup>;
+}
+
+/**
+ * Extra schema logic to layer on top of NgxMatCronSelectComponent's own repeatingCheckboxForm rules, passed
+ * to createRepeatingCheckboxesSchema(). `fields` targets one or more specific checkboxes; `form` receives the
+ * whole schema.
+ */
+export interface IEveryCheckboxesSchemaCustomization {
+  fields?: Partial<Record<keyof IEveryCheckboxesFormGroupValue, SchemaOrSchemaFn<boolean>>>;
+  form?: SchemaOrSchemaFn<IEveryCheckboxesFormGroupValue>;
 }

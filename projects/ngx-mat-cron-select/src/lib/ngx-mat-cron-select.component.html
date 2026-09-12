@@ -48,14 +48,14 @@
   <div class="side-by-side-container">
     <nmcs-hour-select
       class="fixed-width-select"
-      [field]="inputsFormGroup().hour"
-      [checkboxFieldTree]="repeatingCheckboxFieldTree().hour"
+      [field]="inputsForm().hour"
+      [checkboxFieldTree]="repeatingCheckboxForm().hour"
       [isCheckboxVisible]="repeatingCheckboxesVisibility().hour"
     ></nmcs-hour-select>
     <nmcs-minute-select
       class="fixed-width-select"
-      [field]="inputsFormGroup().minute"
-      [checkboxFieldTree]="repeatingCheckboxFieldTree().minute"
+      [field]="inputsForm().minute"
+      [checkboxFieldTree]="repeatingCheckboxForm().minute"
       [isCheckboxVisible]="repeatingCheckboxesVisibility().minute"
     ></nmcs-minute-select>
   </div>
@@ -66,8 +66,8 @@
     <div class="vertical-flex-with-gap">
       <nmcs-minute-select
         class="fixed-width-select"
-        [field]="inputsFormGroup().minute"
-        [checkboxFieldTree]="repeatingCheckboxFieldTree().minute"
+        [field]="inputsForm().minute"
+        [checkboxFieldTree]="repeatingCheckboxForm().minute"
         [isCheckboxVisible]="repeatingCheckboxesVisibility().minute"
       ></nmcs-minute-select>
     </div>
@@ -88,8 +88,8 @@
       <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
       <nmcs-day-of-week-select
         class="fixed-width-select"
-        [field]="inputsFormGroup().dayOfWeek"
-        [checkboxFieldTree]="repeatingCheckboxFieldTree().day"
+        [field]="inputsForm().dayOfWeek"
+        [checkboxFieldTree]="repeatingCheckboxForm().day"
         [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
       ></nmcs-day-of-week-select>
     </div>
@@ -102,8 +102,8 @@
       <ng-template [ngTemplateOutlet]="hourAndMinuteSelect"></ng-template>
       <nmcs-day-of-month-select
         class="fixed-width-select"
-        [field]="inputsFormGroup().dayOfMonth"
-        [checkboxFieldTree]="repeatingCheckboxFieldTree().day"
+        [field]="inputsForm().dayOfMonth"
+        [checkboxFieldTree]="repeatingCheckboxForm().day"
         [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
       ></nmcs-day-of-month-select>
     </div>
@@ -119,15 +119,15 @@
           @if (monthOrDay === 'day') {
             <nmcs-day-of-month-select
               class="fixed-width-select"
-              [field]="inputsFormGroup().dayOfMonth"
-              [checkboxFieldTree]="repeatingCheckboxFieldTree().day"
+              [field]="inputsForm().dayOfMonth"
+              [checkboxFieldTree]="repeatingCheckboxForm().day"
               [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
             ></nmcs-day-of-month-select>
           } @else {
             <nmcs-month-of-year-select
               class="fixed-width-select"
-              [field]="inputsFormGroup().monthOfYear"
-              [checkboxFieldTree]="repeatingCheckboxFieldTree().monthOfYear"
+              [field]="inputsForm().monthOfYear"
+              [checkboxFieldTree]="repeatingCheckboxForm().monthOfYear"
               [isCheckboxVisible]="repeatingCheckboxesVisibility().monthOfYear"
             ></nmcs-month-of-year-select>
           }

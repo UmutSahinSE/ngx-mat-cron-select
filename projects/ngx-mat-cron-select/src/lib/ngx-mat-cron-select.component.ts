@@ -1,18 +1,8 @@
 import { AsyncPipe, NgTemplateOutlet } from '@angular/common';
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  InputSignal,
-  output,
-  Signal,
-  signal,
-} from '@angular/core';
+import { Component, computed, effect, inject, input, InputSignal, output, Signal, signal } from '@angular/core';
 import { untracked } from '@angular/core/primitives/signals';
 import { ReactiveFormsModule } from '@angular/forms';
-import { disabled, FieldTree, FieldValidator, form, validate } from '@angular/forms/signals';
+import { FieldTree, FieldValidator, form } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
@@ -25,21 +15,14 @@ import { NmcsMinuteSelectComponent } from '../input-components/nmcs-minute-selec
 import { NmcsMonthOfYearSelectComponent } from '../input-components/nmcs-month-of-year-select/nmcs-month-of-year-select.component';
 import { NGX_MAT_CRON_SELECT_TAB_ANIMATIONS_DISABLED } from '../tokens';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
+import {
+  createInputsSchema,
+  createRepeatingCheckboxesSchema,
+  inputFields,
+  repeatingCheckboxFields,
+} from './ngx-mat-cron-select-schema';
 import { IEveryCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-mat-cron-select.interface';
 
-const inputFields = [
-  'minute',
-  'hour',
-  'dayOfMonth',
-  'monthOfYear',
-  'dayOfWeek',
-] as const satisfies (keyof IInputsFormGroup)[number][];
-const repeatingCheckboxFields = [
-  'minute',
-  'hour',
-  'day',
-  'monthOfYear',
-] as const satisfies (keyof IEveryCheckboxesFormGroupValue)[number][];
 const inputFieldRanges: Record<(typeof inputFields)[number], readonly [number, number]> = {
   dayOfMonth: [1, 31],
   dayOfWeek: [0, 6],
@@ -175,28 +158,38 @@ export class NgxMatCronSelectComponent {
     monthOfYear: this.getIsRepeatingCheckboxDisabled('monthOfYear'),
   } as const;
 
-  public readonly repeatingCheckboxFieldTree: InputSignal<FieldTree<IEveryCheckboxesFormGroupValue>> = input(
-    form(this.repeatingCheckboxesModel, (schema) => {
-      for (const fieldName of repeatingCheckboxFields) {
-        disabled(schema[fieldName], { when: this.isCheckboxDisabled[fieldName] });
-      }
-    }),
+  public readonly repeatingCheckboxForm: InputSignal<FieldTree<IEveryCheckboxesFormGroupValue>> = input(
+    form(
+      this.repeatingCheckboxesModel,
+      createRepeatingCheckboxesSchema(() => this),
+    ),
   );
 
-  public readonly inputsFormGroup: InputSignal<FieldTree<IInputsFormGroup>> = input(
-    form(this.inputsModel, (schema) => {
-      for (const fieldName of inputFields) {
-        validate(schema[fieldName], this.getInputFieldValidator(fieldName));
-        disabled(schema[fieldName], { when: this.isInputDisabled[fieldName] });
-      }
-    }),
+  public readonly inputsForm: InputSignal<FieldTree<IInputsFormGroup>> = input(
+    form(
+      this.inputsModel,
+      createInputsSchema(() => this),
+    ),
   );
+
+  /** The disabled-state signal this component uses for a given `inputsForm` field. See getInputFieldValidator. */
+  public isInputFieldDisabled(fieldName: keyof IInputsFormGroup): Signal<boolean> {
+    return this.isInputDisabled[fieldName];
+  }
+
+  /** The disabled-state signal this component uses for a given `repeatingCheckboxForm` field. See getInputFieldValidator. */
+  public isRepeatingCheckboxFieldDisabled(fieldName: keyof IEveryCheckboxesFormGroupValue): Signal<boolean> {
+    return this.isCheckboxDisabled[fieldName];
+  }
+
   public readonly value = computed(() => {
-    const formValues = this.inputsFormGroup()().value();
-    const repeatingCheckboxValue = this.repeatingCheckboxFieldTree()().controlValue();
+    const formValues = Object.fromEntries(
+      inputFields.map((fieldName) => [fieldName, this.inputsForm()[fieldName]().value()]),
+    ) as unknown as IInputsFormGroup;
+    const repeatingCheckboxValue = this.repeatingCheckboxForm()().controlValue();
     const activeCheckboxes = this.getActiveCheckboxesBasedOnActiveTab();
 
-    if (!this.inputsFormGroup()().valid()) {
+    if (!this.inputsForm()().valid()) {
       return Object.entries(repeatingCheckboxValue)
         .filter(
           ([inputName]) =>
@@ -229,8 +222,8 @@ export class NgxMatCronSelectComponent {
 
   private previousValue: string | null = null;
   private previousActiveCheckboxes: readonly boolean[] | null = null;
-  private previousInputsFormGroup: FieldTree<IInputsFormGroup> | undefined = undefined;
-  private previousRepeatingCheckboxFieldTree: FieldTree<IEveryCheckboxesFormGroupValue> | undefined = undefined;
+  private previousInputsForm: FieldTree<IInputsFormGroup> | undefined = undefined;
+  private previousRepeatingCheckboxForm: FieldTree<IEveryCheckboxesFormGroupValue> | undefined = undefined;
 
   constructor() {
     this.registerFormControlInitialization();
@@ -276,11 +269,11 @@ export class NgxMatCronSelectComponent {
         return;
       }
 
-      const repeatingCheckboxFormGroup = this.repeatingCheckboxFieldTree();
+      const repeatingCheckboxForm = this.repeatingCheckboxForm();
 
       repeatingCheckboxFields.forEach((fieldName, index) => {
         if (activeCheckboxes[index] && !previousActiveCheckboxes[index]) {
-          repeatingCheckboxFormGroup[fieldName]().value.set(true);
+          repeatingCheckboxForm[fieldName]().value.set(true);
         }
       });
     });
@@ -289,15 +282,14 @@ export class NgxMatCronSelectComponent {
   private registerFormControlInitialization(): void {
     effect(() => {
       const initialValue = this.initialValue();
-      const inputsFormGroup = this.inputsFormGroup();
-      const repeatingCheckboxFieldTree = this.repeatingCheckboxFieldTree();
+      const inputsForm = this.inputsForm();
+      const repeatingCheckboxForm = this.repeatingCheckboxForm();
 
       const haveFormTreesBeenReassigned =
-        inputsFormGroup !== this.previousInputsFormGroup ||
-        repeatingCheckboxFieldTree !== this.previousRepeatingCheckboxFieldTree;
+        inputsForm !== this.previousInputsForm || repeatingCheckboxForm !== this.previousRepeatingCheckboxForm;
 
-      this.previousInputsFormGroup = inputsFormGroup;
-      this.previousRepeatingCheckboxFieldTree = repeatingCheckboxFieldTree;
+      this.previousInputsForm = inputsForm;
+      this.previousRepeatingCheckboxForm = repeatingCheckboxForm;
 
       const isInitialValueEchoingLastEmittedValue = untracked(
         () => this.initializationChecklist.initializationDone() !== null && initialValue === this.previousValue,
@@ -372,24 +364,24 @@ export class NgxMatCronSelectComponent {
   private initialize(): void {
     const initialValue = this.validateInputCron(this.initialValue());
     const selectedTab = this.selectedTab();
-    const inputsFormGroup = this.inputsFormGroup();
-    const repeatingCheckboxFormGroup = this.repeatingCheckboxFieldTree();
+    const inputsForm = this.inputsForm();
+    const repeatingCheckboxForm = this.repeatingCheckboxForm();
 
     if (initialValue === null) {
-      if (!inputsFormGroup().valid()) {
-        this.initializeWithoutStartingValue(inputsFormGroup, repeatingCheckboxFormGroup);
+      if (!inputsForm().valid()) {
+        this.initializeWithoutStartingValue(inputsForm, repeatingCheckboxForm);
       }
 
       return;
     }
 
-    this.setFormUsingInitialValue(initialValue, inputsFormGroup, repeatingCheckboxFormGroup, selectedTab);
+    this.setFormUsingInitialValue(initialValue, inputsForm, repeatingCheckboxForm, selectedTab);
   }
 
   private setFormUsingInitialValue(
     initialValue: string,
-    inputsFormGroup: FieldTree<IInputsFormGroup>,
-    repeatingCheckboxFormGroup: FieldTree<IEveryCheckboxesFormGroupValue>,
+    inputsForm: FieldTree<IInputsFormGroup>,
+    repeatingCheckboxForm: FieldTree<IEveryCheckboxesFormGroupValue>,
     selectedTab: keyof ITab,
   ): void {
     const split = initialValue.split(' ');
@@ -400,7 +392,7 @@ export class NgxMatCronSelectComponent {
       const formControlValue = this.convertCronInputToFormControlValue(splitAsObject[inputName], inputName);
 
       if (formControlValue !== undefined) {
-        inputsFormGroup[inputName]().reset(formControlValue);
+        inputsForm[inputName]().reset(formControlValue);
       }
     }
 
@@ -410,28 +402,28 @@ export class NgxMatCronSelectComponent {
       }
 
       const checkboxName = this.getCheckboxName(inputFields[index]);
-      repeatingCheckboxFormGroup[checkboxName]().reset(fieldValue === '*');
+      repeatingCheckboxForm[checkboxName]().reset(fieldValue === '*');
     }
 
     const shouldCheckboxBeEnabledForDayOfMonth = ['month', 'year'].includes(selectedTab) && dayOfMonth === '*';
     const shouldCheckboxBeEnabledForDayOfWeek = selectedTab === 'week' && dayOfWeek === '*';
 
-    repeatingCheckboxFormGroup.day().reset(shouldCheckboxBeEnabledForDayOfMonth || shouldCheckboxBeEnabledForDayOfWeek);
+    repeatingCheckboxForm.day().reset(shouldCheckboxBeEnabledForDayOfMonth || shouldCheckboxBeEnabledForDayOfWeek);
   }
 
   private initializeWithoutStartingValue(
-    inputsFormGroup: FieldTree<IInputsFormGroup>,
-    repeatingCheckboxFormGroup: FieldTree<IEveryCheckboxesFormGroupValue>,
+    inputsForm: FieldTree<IInputsFormGroup>,
+    repeatingCheckboxForm: FieldTree<IEveryCheckboxesFormGroupValue>,
   ): void {
     for (const inputName of ['dayOfMonth', 'dayOfWeek', 'hour', 'minute', 'monthOfYear'] as const) {
       const resetValue = this.getEmptyInputValue(inputName);
 
       if (resetValue !== undefined) {
-        inputsFormGroup[inputName]().reset(resetValue);
+        inputsForm[inputName]().reset(resetValue);
       }
     }
 
-    repeatingCheckboxFormGroup().value.set({
+    repeatingCheckboxForm().value.set({
       day: false,
       hour: false,
       minute: false,
@@ -447,16 +439,16 @@ export class NgxMatCronSelectComponent {
   }
 
   private getEmptyInputValue(inputName: keyof IInputsFormGroup): [] | null | undefined {
-    return inputName in this.inputsFormGroup()
-      ? Array.isArray(this.inputsFormGroup()[inputName]().value())
+    return inputName in this.inputsForm()
+      ? Array.isArray(this.inputsForm()[inputName]().value())
         ? []
         : null
       : undefined;
   }
 
   private getInputValue(inputName: keyof IInputsFormGroup, stringValue: string): number | number[] | undefined {
-    return inputName in this.inputsFormGroup()().value()
-      ? Array.isArray(this.inputsFormGroup()[inputName]().value())
+    return inputName in this.inputsForm()().value()
+      ? Array.isArray(this.inputsForm()[inputName]().value())
         ? stringValue.split(',').map(Number)
         : Number(stringValue)
       : undefined;
@@ -523,7 +515,7 @@ export class NgxMatCronSelectComponent {
         return true;
       }
 
-      const isMulti = Array.isArray(this.inputsFormGroup()[field]().value());
+      const isMulti = Array.isArray(this.inputsForm()[field]().value());
       const values = isMulti ? split[index].split(',') : [split[index]];
       const [min, max] = inputFieldRanges[field];
 
@@ -591,7 +583,14 @@ export class NgxMatCronSelectComponent {
     return (['year', 'month', 'week', 'day', 'hour'] as const).find((tab) => this.effectiveVisibleTabs()[tab])!;
   }
 
-  private getInputFieldValidator(fieldName: (typeof inputFields)[number]): FieldValidator<TNmcsValue> {
+  /**
+   * The validator this component applies to a given `inputsForm` field (required-when-active + range
+   * check), exposed so a consumer building their own `inputsForm` can layer the same rule on top of it.
+   * Because this depends on this component's own reactive state (selected tab), it can only be evaluated once
+   * this component instance exists — a consumer typically obtains it via `viewChild()` and calls this lazily
+   * inside their own schema's `validate()` call (see the library's README for a full example).
+   */
+  public getInputFieldValidator(fieldName: keyof IInputsFormGroup): FieldValidator<TNmcsValue> {
     return ({ value: valueSig }) => {
       const values = this.toNumberArray(valueSig());
       const isActive = this.getActiveInputsBasedOnActiveTab()[inputFields.indexOf(fieldName)];
@@ -616,7 +615,7 @@ export class NgxMatCronSelectComponent {
         return (
           !isInputActiveBasedOnTab ||
           this.isDisabled() ||
-          this.repeatingCheckboxFieldTree()[this.getCheckboxName(fieldName)]().value()
+          this.repeatingCheckboxForm()[this.getCheckboxName(fieldName)]().value()
         );
       },
       { equal: () => false },
