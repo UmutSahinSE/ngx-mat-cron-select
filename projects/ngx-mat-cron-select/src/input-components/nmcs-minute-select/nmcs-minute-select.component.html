@@ -1,19 +1,33 @@
-@let checkboxField = checkboxFieldTree();
+@let periodicCheckboxField = periodicCheckboxFieldTree();
+@let periodicStepField = periodicStepFieldTree();
 
 <div class="nmcs-minute-select">
-  <mat-form-field subscriptSizing="dynamic">
-    <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [formField]="field()" [multiple]="isMultiselect()">
-      @for (minuteOption of minuteOptions; track minuteOption) {
-        <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
-      }
-    </mat-select>
-    <mat-error></mat-error>
-  </mat-form-field>
+  @if (periodicCheckboxField && periodicCheckboxField().value()) {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formField]="periodicStepField!">
+        @for (step of stepOptions; track step) {
+          <mat-option [value]="step">{{ 'periodicMinuteStepLabel' | translateOrUseDefault: step | async }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  } @else {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'minuteSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formField]="field()" [multiple]="isMultiselect()">
+        @for (minuteOption of minuteOptions; track minuteOption) {
+          <mat-option [value]="minuteOption">{{ minuteOption }}</mat-option>
+        }
+      </mat-select>
+      <mat-error></mat-error>
+    </mat-form-field>
+  }
 
-  @if (isCheckboxVisible() && checkboxField) {
+  @if (isPeriodicCheckboxVisible() && periodicCheckboxField) {
     <section>
-      <mat-checkbox [formField]="checkboxField">{{ 'everyMinuteLabel' | translateOrUseDefault | async }}</mat-checkbox>
+      <mat-checkbox [formField]="periodicCheckboxField">{{
+        'periodicMinuteStepLabel' | translateOrUseDefault: 1 | async
+      }}</mat-checkbox>
     </section>
   }
 </div>

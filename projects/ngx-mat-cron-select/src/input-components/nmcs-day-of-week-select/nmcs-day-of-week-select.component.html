@@ -1,20 +1,32 @@
-@let checkboxFieldTreeIfExists = checkboxFieldTree();
+@let periodicCheckboxFieldTreeIfExists = periodicCheckboxFieldTree();
+@let periodicStepFieldTreeIfExists = periodicStepFieldTree();
 
 <div class="nmcs-day-of-week-select">
-  <mat-form-field subscriptSizing="dynamic">
-    <mat-label>{{ 'dayOfWeekSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [formField]="field()" [multiple]="isMultiselect()">
-      @for (option of options; track option) {
-        <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-    <mat-error></mat-error>
-  </mat-form-field>
+  @if (periodicCheckboxFieldTreeIfExists && periodicCheckboxFieldTreeIfExists().value()) {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'dayOfWeekSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formField]="periodicStepFieldTreeIfExists!">
+        @for (step of stepOptions; track step) {
+          <mat-option [value]="step">{{ 'periodicDayStepLabel' | translateOrUseDefault: step | async }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  } @else {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'dayOfWeekSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formField]="field()" [multiple]="isMultiselect()">
+        @for (option of options; track option) {
+          <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+      <mat-error></mat-error>
+    </mat-form-field>
+  }
 
-  @if (isCheckboxVisible() && checkboxFieldTreeIfExists) {
+  @if (isPeriodicCheckboxVisible() && periodicCheckboxFieldTreeIfExists) {
     <section>
-      <mat-checkbox [formField]="checkboxFieldTreeIfExists">{{
-        'everyDayLabel' | translateOrUseDefault | async
+      <mat-checkbox [formField]="periodicCheckboxFieldTreeIfExists">{{
+        'periodicDayStepLabel' | translateOrUseDefault: 1 | async
       }}</mat-checkbox>
     </section>
   }

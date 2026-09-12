@@ -4,7 +4,7 @@ import { form } from '@angular/forms/signals';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { NGX_MAT_CRON_SELECT_TAB_ANIMATIONS_DISABLED } from '../tokens';
 import { NgxMatCronSelectComponent } from './ngx-mat-cron-select.component';
-import { IEveryCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-mat-cron-select.interface';
+import { IPeriodicCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-mat-cron-select.interface';
 
 @Component({
   imports: [NgxMatCronSelectComponent],
@@ -18,7 +18,7 @@ class HostFeedingValueChangeBackIntoInitialValue {
 }
 
 const allVisibleTabs: ITab = { day: true, hour: true, month: true, week: true, year: true };
-const allVisibleCheckboxes: IEveryCheckboxesFormGroupValue = {
+const allVisibleCheckboxes: IPeriodicCheckboxesFormGroupValue = {
   day: true,
   hour: true,
   minute: true,
@@ -31,7 +31,7 @@ function createFixture(
     initialValue?: string | null;
     isDisabled?: boolean;
     visibleTabs?: Partial<ITab>;
-    repeatingCheckboxesVisibility?: Partial<IEveryCheckboxesFormGroupValue>;
+    periodicCheckboxesVisibility?: Partial<IPeriodicCheckboxesFormGroupValue>;
   } = {},
   providers: unknown[] = [],
 ): ComponentFixture<NgxMatCronSelectComponent> {
@@ -58,10 +58,10 @@ function createFixture(
     fixture.componentRef.setInput('visibleTabs', { ...allVisibleTabs, ...inputs.visibleTabs });
   }
 
-  if (inputs.repeatingCheckboxesVisibility !== undefined) {
-    fixture.componentRef.setInput('repeatingCheckboxesVisibility', {
+  if (inputs.periodicCheckboxesVisibility !== undefined) {
+    fixture.componentRef.setInput('periodicCheckboxesVisibility', {
       ...allVisibleCheckboxes,
-      ...inputs.repeatingCheckboxesVisibility,
+      ...inputs.periodicCheckboxesVisibility,
     });
   }
 
@@ -181,12 +181,12 @@ describe('NgxMatCronSelectComponent', () => {
   });
 
   describe('cron parsing on initialValue', () => {
-    it('round-trips an all-wildcard cron string, checking every applicable "every" checkbox', () => {
+    it('round-trips an all-wildcard cron string, checking every applicable periodic checkbox', () => {
       const fixture = createFixture({ initialValue: '* * * * *' });
       const component = fixture.componentInstance;
 
       expect(component.value()).toBe('* * * * *');
-      expect(component.repeatingCheckboxForm().minute().value()).toBeTrue();
+      expect(component.periodicCheckboxForm().minute().value()).toBeTrue();
     });
 
     it('resets to the empty state when initialValue is null', () => {
@@ -194,7 +194,7 @@ describe('NgxMatCronSelectComponent', () => {
       const component = fixture.componentInstance;
 
       expect(component.inputsForm().minute().value()).toEqual([]);
-      expect(component.repeatingCheckboxForm().minute().value()).toBeFalse();
+      expect(component.periodicCheckboxForm().minute().value()).toBeFalse();
     });
 
     it('populates every field from a fully-specified cron string, including fields inactive for the resolved tab', () => {
@@ -229,6 +229,53 @@ describe('NgxMatCronSelectComponent', () => {
 
       expect(component.inputsForm().minute().value()).toEqual([]);
       expect(component.inputsForm().dayOfWeek().value()).toEqual([]);
+    });
+
+    it('ignores an initialValue with an out-of-range step (e.g. */70 minutes)', () => {
+      const fixture = createFixture({ initialValue: '*/70 5 1 1 3' });
+      const component = fixture.componentInstance;
+
+      expect(component.inputsForm().minute().value()).toEqual([]);
+      expect(component.periodicCheckboxForm().minute().value()).toBeFalse();
+    });
+  });
+
+  describe('step (*/N) recognition on initialValue', () => {
+    it('checks the periodic checkbox and records the step for a "*/N" field', () => {
+      const fixture = createFixture({ initialValue: '*/15 5 1 1 3' });
+      const component = fixture.componentInstance;
+
+      expect(component.periodicCheckboxForm().minute().value()).toBeTrue();
+      expect(component.periodicStepForm().minute().value()).toBe(15);
+      expect(component.inputsForm().minute().value()).toEqual([]);
+    });
+
+    it('records step 1 (the "*" option) for a plain wildcard field', () => {
+      const fixture = createFixture({ initialValue: '* 5 1 1 3' });
+      const component = fixture.componentInstance;
+
+      expect(component.periodicCheckboxForm().minute().value()).toBeTrue();
+      expect(component.periodicStepForm().minute().value()).toBe(1);
+    });
+
+    it('recognizes a "*/N" step on the shared day field for dayOfMonth (month tab)', () => {
+      const fixture = createFixture({ initialValue: '30 5 */2 1 *' });
+
+      expect(fixture.componentInstance.periodicCheckboxForm().day().value()).toBeTrue();
+      expect(fixture.componentInstance.periodicStepForm().day().value()).toBe(2);
+    });
+
+    it('recognizes a "*/N" step on the shared day field for dayOfWeek (week tab)', () => {
+      const fixture = createFixture({ initialValue: '30 5 * * */3' });
+
+      expect(fixture.componentInstance.periodicCheckboxForm().day().value()).toBeTrue();
+      expect(fixture.componentInstance.periodicStepForm().day().value()).toBe(3);
+    });
+
+    it("resolves '*/2' on hour, together with wildcarded day/month/dow, to the 'day' tab", () => {
+      const fixture = createFixture({ initialValue: '30 */2 * * *' });
+
+      expect(selectedTab(fixture)).toBe('day');
     });
   });
 
@@ -325,10 +372,26 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.repeatingCheckboxForm().minute().value.set(true);
+      component.periodicCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
 
       expect(component.value()).toBe('* * * * *');
+    });
+
+    it('renders "*/N" for a checked periodic field whose step is greater than 1', () => {
+      const fixture = createFixture({ initialTab: 'hour' });
+      const component = fixture.componentInstance;
+
+      // Checking the box and picking a step happen as two separate user actions/change-detection cycles: the
+      // checkbox check auto-defaults the step to 1 first (see "periodic step defaults to 1" below), and only
+      // then does the user pick a different step.
+      component.periodicCheckboxForm().minute().value.set(true);
+      fixture.detectChanges();
+
+      component.periodicStepForm().minute().value.set(15);
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('*/15 * * * *');
     });
 
     it('is either null or a fully-formed 5-field cron string, never a partial/malformed string', () => {
@@ -389,7 +452,7 @@ describe('NgxMatCronSelectComponent', () => {
       const fixture = createFixture({ initialTab: 'hour' });
       const component = fixture.componentInstance;
 
-      component.repeatingCheckboxForm().minute().value.set(true);
+      component.periodicCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
 
       expect(component.inputsForm().minute().disabled()).toBeTrue();
@@ -405,7 +468,8 @@ describe('NgxMatCronSelectComponent', () => {
 
       expect(component.inputsForm().minute().disabled()).toBeTrue();
       expect(component.inputsForm().hour().disabled()).toBeTrue();
-      expect(component.repeatingCheckboxForm().minute().disabled()).toBeTrue();
+      expect(component.periodicCheckboxForm().minute().disabled()).toBeTrue();
+      expect(component.periodicStepForm().minute().disabled()).toBeTrue();
     });
 
     it('disables a field once its owning "every" checkbox is checked, and re-enables it when unchecked', () => {
@@ -414,22 +478,22 @@ describe('NgxMatCronSelectComponent', () => {
 
       expect(component.inputsForm().minute().disabled()).toBeFalse();
 
-      component.repeatingCheckboxForm().minute().value.set(true);
+      component.periodicCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
       expect(component.inputsForm().minute().disabled()).toBeTrue();
 
-      component.repeatingCheckboxForm().minute().value.set(false);
+      component.periodicCheckboxForm().minute().value.set(false);
       fixture.detectChanges();
       expect(component.inputsForm().minute().disabled()).toBeFalse();
     });
 
-    it('disables a checkbox not visible via repeatingCheckboxesVisibility', () => {
+    it('disables a checkbox not visible via periodicCheckboxesVisibility', () => {
       const fixture = createFixture({
         initialTab: 'hour',
-        repeatingCheckboxesVisibility: { minute: false },
+        periodicCheckboxesVisibility: { minute: false },
       });
 
-      expect(fixture.componentInstance.repeatingCheckboxForm().minute().disabled()).toBeTrue();
+      expect(fixture.componentInstance.periodicCheckboxForm().minute().disabled()).toBeTrue();
     });
 
     it('disables fields that are inactive for the currently selected tab, and re-enables them once their auto-checked checkbox is unchecked', () => {
@@ -445,7 +509,7 @@ describe('NgxMatCronSelectComponent', () => {
       // below), so it stays disabled until the user unchecks it.
       expect(component.inputsForm().dayOfMonth().disabled()).toBeTrue();
 
-      component.repeatingCheckboxForm().day().value.set(false);
+      component.periodicCheckboxForm().day().value.set(false);
       fixture.detectChanges();
 
       expect(component.inputsForm().dayOfMonth().disabled()).toBeFalse();
@@ -458,7 +522,7 @@ describe('NgxMatCronSelectComponent', () => {
       const emitted: (string | null)[] = [];
       fixture.componentInstance.valueChange.subscribe((value) => emitted.push(value));
 
-      fixture.componentInstance.repeatingCheckboxForm().minute().value.set(true);
+      fixture.componentInstance.periodicCheckboxForm().minute().value.set(true);
       fixture.detectChanges();
 
       expect(emitted).toEqual(['* * * * *']);
@@ -500,7 +564,7 @@ describe('NgxMatCronSelectComponent', () => {
     });
   });
 
-  describe('tab-switch side effects on repeating checkboxes', () => {
+  describe('tab-switch side effects on periodic checkboxes', () => {
     it('checks the newly-active field checkbox when a tab switch reveals it', () => {
       const fixture = createFixture({ initialTab: 'day' });
       const component = fixture.componentInstance;
@@ -511,7 +575,56 @@ describe('NgxMatCronSelectComponent', () => {
       fixture.detectChanges();
 
       expect(selectedTab(fixture)).toBe('week');
-      expect(component.repeatingCheckboxForm().day().value()).toBeTrue();
+      expect(component.periodicCheckboxForm().day().value()).toBeTrue();
+    });
+
+    it('also defaults the auto-checked field\'s step to 1 (the "*" option)', () => {
+      const fixture = createFixture({ initialTab: 'day' });
+      const component = fixture.componentInstance;
+
+      component.periodicStepForm().day().value.set(10);
+
+      fixture.componentInstance.setTab(2);
+      fixture.detectChanges();
+
+      expect(component.periodicCheckboxForm().day().value()).toBeTrue();
+      expect(component.periodicStepForm().day().value()).toBe(1);
+    });
+  });
+
+  describe('periodic step defaults to 1 ("*") on check', () => {
+    it('resets a periodic field\'s step to 1 when its checkbox is directly checked by the user', () => {
+      const fixture = createFixture({ initialTab: 'hour' });
+      const component = fixture.componentInstance;
+
+      component.periodicStepForm().minute().value.set(20);
+      component.periodicCheckboxForm().minute().value.set(true);
+      fixture.detectChanges();
+
+      expect(component.periodicStepForm().minute().value()).toBe(1);
+    });
+
+    it('does not reset the step parsed from a "*/N" initialValue', () => {
+      const fixture = createFixture({ initialValue: '*/15 5 1 1 3' });
+      const component = fixture.componentInstance;
+
+      expect(component.periodicStepForm().minute().value()).toBe(15);
+    });
+
+    it('leaves the step untouched when the checkbox is unchecked (no false-to-true transition)', () => {
+      const fixture = createFixture({ initialTab: 'hour' });
+      const component = fixture.componentInstance;
+
+      component.periodicCheckboxForm().minute().value.set(true);
+      fixture.detectChanges();
+
+      component.periodicStepForm().minute().value.set(20);
+      fixture.detectChanges();
+
+      component.periodicCheckboxForm().minute().value.set(false);
+      fixture.detectChanges();
+
+      expect(component.periodicStepForm().minute().value()).toBe(20);
     });
   });
 

@@ -49,14 +49,16 @@
     <nmcs-hour-select
       class="fixed-width-select"
       [field]="inputsForm().hour"
-      [checkboxFieldTree]="repeatingCheckboxForm().hour"
-      [isCheckboxVisible]="repeatingCheckboxesVisibility().hour"
+      [periodicCheckboxFieldTree]="periodicCheckboxForm().hour"
+      [periodicStepFieldTree]="periodicStepForm().hour"
+      [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().hour"
     ></nmcs-hour-select>
     <nmcs-minute-select
       class="fixed-width-select"
       [field]="inputsForm().minute"
-      [checkboxFieldTree]="repeatingCheckboxForm().minute"
-      [isCheckboxVisible]="repeatingCheckboxesVisibility().minute"
+      [periodicCheckboxFieldTree]="periodicCheckboxForm().minute"
+      [periodicStepFieldTree]="periodicStepForm().minute"
+      [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().minute"
     ></nmcs-minute-select>
   </div>
 </ng-template>
@@ -67,8 +69,9 @@
       <nmcs-minute-select
         class="fixed-width-select"
         [field]="inputsForm().minute"
-        [checkboxFieldTree]="repeatingCheckboxForm().minute"
-        [isCheckboxVisible]="repeatingCheckboxesVisibility().minute"
+        [periodicCheckboxFieldTree]="periodicCheckboxForm().minute"
+        [periodicStepFieldTree]="periodicStepForm().minute"
+        [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().minute"
       ></nmcs-minute-select>
     </div>
   }
@@ -89,8 +92,9 @@
       <nmcs-day-of-week-select
         class="fixed-width-select"
         [field]="inputsForm().dayOfWeek"
-        [checkboxFieldTree]="repeatingCheckboxForm().day"
-        [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
+        [periodicCheckboxFieldTree]="periodicCheckboxForm().day"
+        [periodicStepFieldTree]="periodicStepForm().day"
+        [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().day"
       ></nmcs-day-of-week-select>
     </div>
   }
@@ -103,8 +107,9 @@
       <nmcs-day-of-month-select
         class="fixed-width-select"
         [field]="inputsForm().dayOfMonth"
-        [checkboxFieldTree]="repeatingCheckboxForm().day"
-        [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
+        [periodicCheckboxFieldTree]="periodicCheckboxForm().day"
+        [periodicStepFieldTree]="periodicStepForm().day"
+        [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().day"
       ></nmcs-day-of-month-select>
     </div>
   }
@@ -120,15 +125,17 @@
             <nmcs-day-of-month-select
               class="fixed-width-select"
               [field]="inputsForm().dayOfMonth"
-              [checkboxFieldTree]="repeatingCheckboxForm().day"
-              [isCheckboxVisible]="repeatingCheckboxesVisibility().day"
+              [periodicCheckboxFieldTree]="periodicCheckboxForm().day"
+              [periodicStepFieldTree]="periodicStepForm().day"
+              [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().day"
             ></nmcs-day-of-month-select>
           } @else {
             <nmcs-month-of-year-select
               class="fixed-width-select"
               [field]="inputsForm().monthOfYear"
-              [checkboxFieldTree]="repeatingCheckboxForm().monthOfYear"
-              [isCheckboxVisible]="repeatingCheckboxesVisibility().monthOfYear"
+              [periodicCheckboxFieldTree]="periodicCheckboxForm().monthOfYear"
+              [periodicStepFieldTree]="periodicStepForm().monthOfYear"
+              [isPeriodicCheckboxVisible]="periodicCheckboxesVisibility().monthOfYear"
             ></nmcs-month-of-year-select>
           }
         }

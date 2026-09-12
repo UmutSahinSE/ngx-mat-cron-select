@@ -35,12 +35,17 @@ import { TNmcsValue } from '../nmcs-input.interface';
 })
 export class NmcsDayOfMonthSelectComponent<FormControlValue extends TNmcsValue> {
   public readonly field = input.required<Field<FormControlValue>>();
-  public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
-  public readonly isCheckboxVisible = input.required<boolean>();
+  public readonly periodicCheckboxFieldTree = input.required<FieldTree<boolean> | null>();
+  public readonly periodicStepFieldTree = input.required<FieldTree<number> | null>();
+  public readonly isPeriodicCheckboxVisible = input.required<boolean>();
 
   public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));
 
   protected readonly options = Array(31)
+    .fill(null)
+    .map((_, index) => index + 1);
+
+  protected readonly stepOptions = Array(31)
     .fill(null)
     .map((_, index) => index + 1);
 }

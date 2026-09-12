@@ -25,10 +25,14 @@ function createFixture<FormControlValue extends number[] | number | null = numbe
     TestBed.runInInjectionContext(() => form(signal(fieldValue))),
   );
   fixture.componentRef.setInput(
-    'checkboxFieldTree',
+    'periodicCheckboxFieldTree',
     TestBed.runInInjectionContext(() => form(signal(false))),
   );
-  fixture.componentRef.setInput('isCheckboxVisible', true);
+  fixture.componentRef.setInput(
+    'periodicStepFieldTree',
+    TestBed.runInInjectionContext(() => form(signal(1))),
+  );
+  fixture.componentRef.setInput('isPeriodicCheckboxVisible', true);
   fixture.detectChanges();
 
   return fixture;

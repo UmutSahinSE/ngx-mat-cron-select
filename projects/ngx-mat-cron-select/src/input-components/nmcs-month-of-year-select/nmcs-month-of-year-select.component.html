@@ -1,19 +1,31 @@
-@let everyMonthControl = checkboxFieldTree();
+@let periodicCheckboxControl = periodicCheckboxFieldTree();
+@let periodicStepControl = periodicStepFieldTree();
 
 <div class="nmcs-month-of-year-select">
-  <mat-form-field subscriptSizing="dynamic">
-    <mat-label>{{ 'monthSelectLabel' | translateOrUseDefault | async }}</mat-label>
-    <mat-select [formField]="field()" [multiple]="isMultiselect()">
-      @for (option of options; track option) {
-        <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
+  @if (periodicCheckboxControl && periodicCheckboxControl().value()) {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'monthSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formField]="periodicStepControl!">
+        @for (step of stepOptions; track step) {
+          <mat-option [value]="step">{{ 'periodicMonthStepLabel' | translateOrUseDefault: step | async }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  } @else {
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>{{ 'monthSelectLabel' | translateOrUseDefault | async }}</mat-label>
+      <mat-select [formField]="field()" [multiple]="isMultiselect()">
+        @for (option of options; track option) {
+          <mat-option [value]="option.cronValue">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
 
-  @if (isCheckboxVisible() && everyMonthControl) {
+  @if (isPeriodicCheckboxVisible() && periodicCheckboxControl) {
     <section>
-      <mat-checkbox [formField]="everyMonthControl">{{
-        'everyMonthLabel' | translateOrUseDefault | async
+      <mat-checkbox [formField]="periodicCheckboxControl">{{
+        'periodicMonthStepLabel' | translateOrUseDefault: 1 | async
       }}</mat-checkbox>
     </section>
   }

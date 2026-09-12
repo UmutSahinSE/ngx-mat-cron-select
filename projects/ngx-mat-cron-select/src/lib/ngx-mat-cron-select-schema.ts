@@ -1,10 +1,12 @@
 import { apply, disabled, SchemaFn, validate } from '@angular/forms/signals';
 import type { NgxMatCronSelectComponent } from './ngx-mat-cron-select.component';
 import {
-  IEveryCheckboxesFormGroupValue,
-  IEveryCheckboxesSchemaCustomization,
   IInputsFormGroup,
   IInputsSchemaCustomization,
+  IPeriodicCheckboxesFormGroupValue,
+  IPeriodicCheckboxesSchemaCustomization,
+  IPeriodicStepsFormGroupValue,
+  IPeriodicStepsSchemaCustomization,
 } from './ngx-mat-cron-select.interface';
 
 export const inputFields = [
@@ -14,15 +16,15 @@ export const inputFields = [
   'monthOfYear',
   'dayOfWeek',
 ] as const satisfies (keyof IInputsFormGroup)[number][];
-export const repeatingCheckboxFields = [
+export const periodicCheckboxFields = [
   'minute',
   'hour',
   'day',
   'monthOfYear',
-] as const satisfies (keyof IEveryCheckboxesFormGroupValue)[number][];
+] as const satisfies (keyof IPeriodicCheckboxesFormGroupValue)[number][];
 
 type TInputsSchemaSource = Pick<NgxMatCronSelectComponent, 'getInputFieldValidator' | 'isInputFieldDisabled'>;
-type TRepeatingCheckboxesSchemaSource = Pick<NgxMatCronSelectComponent, 'isRepeatingCheckboxFieldDisabled'>;
+type TPeriodicCheckboxesSchemaSource = Pick<NgxMatCronSelectComponent, 'isPeriodicCheckboxFieldDisabled'>;
 
 /**
  * Builds a schema function that reuses an `NgxMatCronSelectComponent` instance's own `inputsForm`
@@ -57,15 +59,43 @@ export function createInputsSchema(
   };
 }
 
-/** Same as createInputsSchema, but reusing an instance's repeatingCheckboxForm disabling rules. */
-export function createRepeatingCheckboxesSchema(
-  getCronSelect: () => TRepeatingCheckboxesSchemaSource | undefined,
-  customization?: IEveryCheckboxesSchemaCustomization,
-): SchemaFn<IEveryCheckboxesFormGroupValue> {
+/** Same as createInputsSchema, but reusing an instance's periodicCheckboxForm disabling rules. */
+export function createPeriodicCheckboxesSchema(
+  getCronSelect: () => TPeriodicCheckboxesSchemaSource | undefined,
+  customization?: IPeriodicCheckboxesSchemaCustomization,
+): SchemaFn<IPeriodicCheckboxesFormGroupValue> {
   return (schema) => {
-    for (const fieldName of repeatingCheckboxFields) {
+    for (const fieldName of periodicCheckboxFields) {
       disabled(schema[fieldName], {
-        when: () => getCronSelect()?.isRepeatingCheckboxFieldDisabled(fieldName)() ?? false,
+        when: () => getCronSelect()?.isPeriodicCheckboxFieldDisabled(fieldName)() ?? false,
+      });
+
+      const fieldCustomization = customization?.fields?.[fieldName];
+
+      if (fieldCustomization) {
+        apply(schema[fieldName], fieldCustomization);
+      }
+    }
+
+    if (customization?.form) {
+      apply(schema, customization.form);
+    }
+  };
+}
+
+/**
+ * Same as createPeriodicCheckboxesSchema, but for `periodicStepForm` — reuses the exact same
+ * `isPeriodicCheckboxFieldDisabled` disabling rules as the checkbox each step select belongs to (tab-inactive,
+ * `isDisabled`, or hidden via visibility all disable the pair together).
+ */
+export function createPeriodicStepsSchema(
+  getCronSelect: () => TPeriodicCheckboxesSchemaSource | undefined,
+  customization?: IPeriodicStepsSchemaCustomization,
+): SchemaFn<IPeriodicStepsFormGroupValue> {
+  return (schema) => {
+    for (const fieldName of periodicCheckboxFields) {
+      disabled(schema[fieldName], {
+        when: () => getCronSelect()?.isPeriodicCheckboxFieldDisabled(fieldName)() ?? false,
       });
 
       const fieldCustomization = customization?.fields?.[fieldName];

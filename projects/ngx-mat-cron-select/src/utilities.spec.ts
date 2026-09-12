@@ -6,10 +6,6 @@ const translations: Record<'en' | 'tr', INMCSTranslations> = {
   en: {
     dayOfMonthSelectLabel: 'Select days',
     dayOfWeekSelectLabel: 'Select days of week',
-    everyDayLabel: 'Every Day',
-    everyHourLabel: 'Every Hour',
-    everyMinuteLabel: 'Every Minute',
-    everyMonthLabel: 'Every Month',
     hourSelectLabel: 'Select hours',
     minuteSelectLabel: 'Select minutes',
     monthSelectLabel: 'Select months',
@@ -18,14 +14,14 @@ const translations: Record<'en' | 'tr', INMCSTranslations> = {
     tabLabelMonth: 'Month',
     tabLabelWeek: 'Week',
     tabLabelYear: 'Year',
+    periodicDayStepLabel: 'Every {{n}} days',
+    periodicStepLabelOverrides: {
+      day: { 1: 'Every Day', 2: 'Every other day' },
+    },
   },
   tr: {
     dayOfMonthSelectLabel: 'Günleri seç',
     dayOfWeekSelectLabel: 'Haftanın günlerini seç',
-    everyDayLabel: 'Her Gün',
-    everyHourLabel: 'Her Saat',
-    everyMinuteLabel: 'Her Dakika',
-    everyMonthLabel: 'Her Ay',
     hourSelectLabel: 'Saatleri seç',
     minuteSelectLabel: 'Dakikaları seç',
     monthSelectLabel: 'Ayları seç',
@@ -50,8 +46,8 @@ describe('provideNMCSTranslations', () => {
     const provider = provideNMCSTranslations(of(translations), of<TLanguage>('en'));
     const service = (provider as { useValue: { stream: (key: string) => Observable<string> } }).useValue;
 
-    service.stream('ngxMatCronSelect.everyHourLabel').subscribe((value: string) => {
-      expect(value).toBe('Every Hour');
+    service.stream('ngxMatCronSelect.hourSelectLabel').subscribe((value: string) => {
+      expect(value).toBe('Select hours');
       done();
     });
   });
@@ -60,8 +56,8 @@ describe('provideNMCSTranslations', () => {
     const provider = provideNMCSTranslations(of(translations), of<TLanguage>('tr'));
     const service = (provider as { useValue: { stream: (key: string) => Observable<string> } }).useValue;
 
-    service.stream('ngxMatCronSelect.everyHourLabel').subscribe((value: string) => {
-      expect(value).toBe('Her Saat');
+    service.stream('ngxMatCronSelect.hourSelectLabel').subscribe((value: string) => {
+      expect(value).toBe('Saatleri seç');
       done();
     });
   });
@@ -91,5 +87,47 @@ describe('provideNMCSTranslations', () => {
     });
 
     expect(emitted).toEqual(['Hour', 'Updated Hour']);
+  });
+
+  describe('periodic step label overrides', () => {
+    it('resolves the step-1 override ("*"/every), the same convention used for every other step number', (done) => {
+      const provider = provideNMCSTranslations(of(translations), of<TLanguage>('en'));
+      const service = (provider as { useValue: { stream: (key: string) => Observable<string> } }).useValue;
+
+      service.stream('ngxMatCronSelect.periodicDayStepLabel_1').subscribe((value: string) => {
+        expect(value).toBe('Every Day');
+        done();
+      });
+    });
+
+    it('resolves a specific per-number override via the "<key>_<n>" convention', (done) => {
+      const provider = provideNMCSTranslations(of(translations), of<TLanguage>('en'));
+      const service = (provider as { useValue: { stream: (key: string) => Observable<string> } }).useValue;
+
+      service.stream('ngxMatCronSelect.periodicDayStepLabel_2').subscribe((value: string) => {
+        expect(value).toBe('Every other day');
+        done();
+      });
+    });
+
+    it('echoes back the requested key when no override exists for that number', (done) => {
+      const provider = provideNMCSTranslations(of(translations), of<TLanguage>('en'));
+      const service = (provider as { useValue: { stream: (key: string) => Observable<string> } }).useValue;
+
+      service.stream('ngxMatCronSelect.periodicDayStepLabel_5').subscribe((value: string) => {
+        expect(value).toBe('ngxMatCronSelect.periodicDayStepLabel_5');
+        done();
+      });
+    });
+
+    it('echoes back the requested key when an optional translation property is altogether missing', (done) => {
+      const provider = provideNMCSTranslations(of(translations), of<TLanguage>('tr'));
+      const service = (provider as { useValue: { stream: (key: string) => Observable<string> } }).useValue;
+
+      service.stream('ngxMatCronSelect.periodicDayStepLabel').subscribe((value: string) => {
+        expect(value).toBe('ngxMatCronSelect.periodicDayStepLabel');
+        done();
+      });
+    });
   });
 });

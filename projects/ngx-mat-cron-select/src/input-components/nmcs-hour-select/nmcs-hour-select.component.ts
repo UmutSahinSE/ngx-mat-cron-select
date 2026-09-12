@@ -65,10 +65,15 @@ export class NmcsHourSelectComponent<FormControlValue extends TNmcsValue> implem
   private readonly injector = inject(Injector);
 
   public readonly field = input.required<Field<FormControlValue>>();
-  public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
-  public readonly isCheckboxVisible = input.required<boolean>();
+  public readonly periodicCheckboxFieldTree = input.required<FieldTree<boolean> | null>();
+  public readonly periodicStepFieldTree = input.required<FieldTree<number> | null>();
+  public readonly isPeriodicCheckboxVisible = input.required<boolean>();
 
   public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));
+
+  protected readonly stepOptions = Array(24)
+    .fill(null)
+    .map((_, index) => index + 1);
 
   private readonly dateField = linkedSignal(() => {
     const fieldValue = this.field()().value();

@@ -10,11 +10,18 @@ export interface ITab {
   year: boolean;
 }
 
-export interface IEveryCheckboxesFormGroupValue {
+export interface IPeriodicCheckboxesFormGroupValue {
   day: boolean;
   hour: boolean;
   minute: boolean;
   monthOfYear: boolean;
+}
+
+export interface IPeriodicStepsFormGroupValue {
+  day: number;
+  hour: number;
+  minute: number;
+  monthOfYear: number;
 }
 
 export const twelveHourLocales: readonly string[] = [
@@ -55,11 +62,21 @@ export interface IInputsSchemaCustomization {
 }
 
 /**
- * Extra schema logic to layer on top of NgxMatCronSelectComponent's own repeatingCheckboxForm rules, passed
- * to createRepeatingCheckboxesSchema(). `fields` targets one or more specific checkboxes; `form` receives the
+ * Extra schema logic to layer on top of NgxMatCronSelectComponent's own periodicCheckboxForm rules, passed
+ * to createPeriodicCheckboxesSchema(). `fields` targets one or more specific checkboxes; `form` receives the
  * whole schema.
  */
-export interface IEveryCheckboxesSchemaCustomization {
-  fields?: Partial<Record<keyof IEveryCheckboxesFormGroupValue, SchemaOrSchemaFn<boolean>>>;
-  form?: SchemaOrSchemaFn<IEveryCheckboxesFormGroupValue>;
+export interface IPeriodicCheckboxesSchemaCustomization {
+  fields?: Partial<Record<keyof IPeriodicCheckboxesFormGroupValue, SchemaOrSchemaFn<boolean>>>;
+  form?: SchemaOrSchemaFn<IPeriodicCheckboxesFormGroupValue>;
+}
+
+/**
+ * Extra schema logic to layer on top of NgxMatCronSelectComponent's own periodicStepForm rules, passed
+ * to createPeriodicStepsSchema(). `fields` targets one or more specific step selects; `form` receives the
+ * whole schema.
+ */
+export interface IPeriodicStepsSchemaCustomization {
+  fields?: Partial<Record<keyof IPeriodicStepsFormGroupValue, SchemaOrSchemaFn<number>>>;
+  form?: SchemaOrSchemaFn<IPeriodicStepsFormGroupValue>;
 }

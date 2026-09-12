@@ -17,11 +17,17 @@ import { NGX_MAT_CRON_SELECT_TAB_ANIMATIONS_DISABLED } from '../tokens';
 import { TranslateOrUseDefaultPipe } from '../translate-or-use-default.pipe';
 import {
   createInputsSchema,
-  createRepeatingCheckboxesSchema,
+  createPeriodicCheckboxesSchema,
+  createPeriodicStepsSchema,
   inputFields,
-  repeatingCheckboxFields,
+  periodicCheckboxFields,
 } from './ngx-mat-cron-select-schema';
-import { IEveryCheckboxesFormGroupValue, IInputsFormGroup, ITab } from './ngx-mat-cron-select.interface';
+import {
+  IInputsFormGroup,
+  IPeriodicCheckboxesFormGroupValue,
+  IPeriodicStepsFormGroupValue,
+  ITab,
+} from './ngx-mat-cron-select.interface';
 
 const inputFieldRanges: Record<(typeof inputFields)[number], readonly [number, number]> = {
   dayOfMonth: [1, 31],
@@ -67,14 +73,21 @@ export class NgxMatCronSelectComponent {
     monthOfYear: [],
   });
 
-  private readonly repeatingCheckboxesModel = signal<IEveryCheckboxesFormGroupValue>({
+  private readonly periodicCheckboxesModel = signal<IPeriodicCheckboxesFormGroupValue>({
     day: false,
     hour: false,
     minute: false,
     monthOfYear: false,
   });
 
-  public readonly repeatingCheckboxesVisibility = input<IEveryCheckboxesFormGroupValue>({
+  private readonly periodicStepsModel = signal<IPeriodicStepsFormGroupValue>({
+    day: 1,
+    hour: 1,
+    minute: 1,
+    monthOfYear: 1,
+  });
+
+  public readonly periodicCheckboxesVisibility = input<IPeriodicCheckboxesFormGroupValue>({
     day: true,
     hour: true,
     minute: true,
@@ -122,7 +135,7 @@ export class NgxMatCronSelectComponent {
       minute: signal<symbol | null>(null),
       monthOfYear: signal<symbol | null>(null),
     },
-    disablingRepeatingCheckbox: {
+    disablingPeriodicCheckbox: {
       day: signal<symbol | null>(null),
       hour: signal<symbol | null>(null),
       minute: signal<symbol | null>(null),
@@ -132,12 +145,12 @@ export class NgxMatCronSelectComponent {
     settingSymbol: signal<symbol | null>(null),
   } as const;
 
-  private readonly isRepeatingCheckboxAvailabilitySettled = computed(() => {
+  private readonly isPeriodicCheckboxAvailabilitySettled = computed(() => {
     const disabledStatuses = [
-      this.initializationChecklist.disablingRepeatingCheckbox.day(),
-      this.initializationChecklist.disablingRepeatingCheckbox.hour(),
-      this.initializationChecklist.disablingRepeatingCheckbox.minute(),
-      this.initializationChecklist.disablingRepeatingCheckbox.monthOfYear(),
+      this.initializationChecklist.disablingPeriodicCheckbox.day(),
+      this.initializationChecklist.disablingPeriodicCheckbox.hour(),
+      this.initializationChecklist.disablingPeriodicCheckbox.minute(),
+      this.initializationChecklist.disablingPeriodicCheckbox.monthOfYear(),
     ];
 
     return disabledStatuses.every((status) => status === this.initializationChecklist.settingSymbol());
@@ -151,17 +164,24 @@ export class NgxMatCronSelectComponent {
     monthOfYear: this.getIsInputDisabled('monthOfYear'),
   } as const;
 
-  private readonly isCheckboxDisabled = {
-    day: this.getIsRepeatingCheckboxDisabled('day'),
-    hour: this.getIsRepeatingCheckboxDisabled('hour'),
-    minute: this.getIsRepeatingCheckboxDisabled('minute'),
-    monthOfYear: this.getIsRepeatingCheckboxDisabled('monthOfYear'),
+  private readonly isPeriodicCheckboxDisabled = {
+    day: this.getIsPeriodicCheckboxDisabled('day'),
+    hour: this.getIsPeriodicCheckboxDisabled('hour'),
+    minute: this.getIsPeriodicCheckboxDisabled('minute'),
+    monthOfYear: this.getIsPeriodicCheckboxDisabled('monthOfYear'),
   } as const;
 
-  public readonly repeatingCheckboxForm: InputSignal<FieldTree<IEveryCheckboxesFormGroupValue>> = input(
+  public readonly periodicCheckboxForm: InputSignal<FieldTree<IPeriodicCheckboxesFormGroupValue>> = input(
     form(
-      this.repeatingCheckboxesModel,
-      createRepeatingCheckboxesSchema(() => this),
+      this.periodicCheckboxesModel,
+      createPeriodicCheckboxesSchema(() => this),
+    ),
+  );
+
+  public readonly periodicStepForm: InputSignal<FieldTree<IPeriodicStepsFormGroupValue>> = input(
+    form(
+      this.periodicStepsModel,
+      createPeriodicStepsSchema(() => this),
     ),
   );
 
@@ -177,58 +197,50 @@ export class NgxMatCronSelectComponent {
     return this.isInputDisabled[fieldName];
   }
 
-  /** The disabled-state signal this component uses for a given `repeatingCheckboxForm` field. See getInputFieldValidator. */
-  public isRepeatingCheckboxFieldDisabled(fieldName: keyof IEveryCheckboxesFormGroupValue): Signal<boolean> {
-    return this.isCheckboxDisabled[fieldName];
+  /**
+   * The disabled-state signal this component uses for a given `periodicCheckboxForm`/`periodicStepForm` field.
+   * See getInputFieldValidator.
+   */
+  public isPeriodicCheckboxFieldDisabled(fieldName: keyof IPeriodicCheckboxesFormGroupValue): Signal<boolean> {
+    return this.isPeriodicCheckboxDisabled[fieldName];
   }
 
   public readonly value = computed(() => {
-    const formValues = Object.fromEntries(
-      inputFields.map((fieldName) => [fieldName, this.inputsForm()[fieldName]().value()]),
-    ) as unknown as IInputsFormGroup;
-    const repeatingCheckboxValue = this.repeatingCheckboxForm()().controlValue();
+    const periodicCheckboxValue = this.periodicCheckboxForm()().controlValue();
     const activeCheckboxes = this.getActiveCheckboxesBasedOnActiveTab();
+    const activeInputs = this.getActiveInputsBasedOnActiveTab();
 
     if (!this.inputsForm()().valid()) {
-      return Object.entries(repeatingCheckboxValue)
-        .filter(
-          ([inputName]) =>
-            activeCheckboxes[repeatingCheckboxFields.indexOf(inputName as keyof IEveryCheckboxesFormGroupValue)],
+      const areAllActiveCheckboxesChecked = periodicCheckboxFields
+        .filter((_, index) => activeCheckboxes[index])
+        .every((fieldName) => periodicCheckboxValue[fieldName]);
+
+      if (!areAllActiveCheckboxesChecked) {
+        return null;
+      }
+
+      return inputFields
+        .map((fieldName, index) =>
+          activeInputs[index] ? this.renderPeriodicField(this.getPeriodicFieldName(fieldName)) : '*',
         )
-        .every(([_, checkboxValue]) => checkboxValue)
-        ? '* * * * *'
-        : null;
+        .join(' ');
     }
 
-    return this.getActiveInputsBasedOnActiveTab()
-      .map((isActive, index) => {
-        const fieldName = inputFields[index];
-        const checkboxName = this.getCheckboxName(fieldName);
-
-        if (
-          !isActive ||
-          !activeCheckboxes[repeatingCheckboxFields.indexOf(checkboxName)] ||
-          repeatingCheckboxValue[checkboxName]
-        ) {
-          return '*';
-        }
-
-        return Array.isArray(formValues[fieldName])
-          ? [...formValues[fieldName]].sort((a, b) => a - b).join(',')
-          : formValues[fieldName];
-      })
-      .join(' ');
+    return inputFields.map((fieldName, index) => this.renderDigit(fieldName, index)).join(' ');
   });
 
   private previousValue: string | null = null;
   private previousActiveCheckboxes: readonly boolean[] | null = null;
+  private previousPeriodicCheckedValues: IPeriodicCheckboxesFormGroupValue | null = null;
   private previousInputsForm: FieldTree<IInputsFormGroup> | undefined = undefined;
-  private previousRepeatingCheckboxForm: FieldTree<IEveryCheckboxesFormGroupValue> | undefined = undefined;
+  private previousPeriodicCheckboxForm: FieldTree<IPeriodicCheckboxesFormGroupValue> | undefined = undefined;
+  private previousPeriodicStepForm: FieldTree<IPeriodicStepsFormGroupValue> | undefined = undefined;
 
   constructor() {
     this.registerFormControlInitialization();
     this.registerOnChangeCall();
     this.registerCheckboxAutoCheckOnTabSwitch();
+    this.registerStepDefaultOnCheckboxCheck();
   }
 
   public setTab(tabIndex: number): void {
@@ -269,11 +281,41 @@ export class NgxMatCronSelectComponent {
         return;
       }
 
-      const repeatingCheckboxForm = this.repeatingCheckboxForm();
+      const periodicCheckboxForm = this.periodicCheckboxForm();
 
-      repeatingCheckboxFields.forEach((fieldName, index) => {
+      periodicCheckboxFields.forEach((fieldName, index) => {
         if (activeCheckboxes[index] && !previousActiveCheckboxes[index]) {
-          repeatingCheckboxForm[fieldName]().value.set(true);
+          periodicCheckboxForm[fieldName]().value.set(true);
+        }
+      });
+    });
+  }
+
+  /**
+   * Whenever a periodic checkbox transitions from unchecked to checked — whether by a direct user click or via
+   * registerCheckboxAutoCheckOnTabSwitch's auto-check — its step resets to 1, i.e. the "*" option, per the
+   * library's contract that a freshly-checked periodic field always starts out as the plain wildcard rather than
+   * whatever step happened to be left over from a previous check.
+   */
+  private registerStepDefaultOnCheckboxCheck(): void {
+    effect(() => {
+      if (this.initializationChecklist.settingSymbol() !== this.initializationChecklist.initializationDone()) {
+        return;
+      }
+
+      const periodicCheckboxForm = this.periodicCheckboxForm();
+      const periodicStepForm = this.periodicStepForm();
+      const currentCheckedValues = periodicCheckboxForm().controlValue();
+      const { previousPeriodicCheckedValues } = this;
+      this.previousPeriodicCheckedValues = currentCheckedValues;
+
+      if (previousPeriodicCheckedValues === null) {
+        return;
+      }
+
+      periodicCheckboxFields.forEach((fieldName) => {
+        if (currentCheckedValues[fieldName] && !previousPeriodicCheckedValues[fieldName]) {
+          periodicStepForm[fieldName]().value.set(1);
         }
       });
     });
@@ -283,13 +325,17 @@ export class NgxMatCronSelectComponent {
     effect(() => {
       const initialValue = this.initialValue();
       const inputsForm = this.inputsForm();
-      const repeatingCheckboxForm = this.repeatingCheckboxForm();
+      const periodicCheckboxForm = this.periodicCheckboxForm();
+      const periodicStepForm = this.periodicStepForm();
 
       const haveFormTreesBeenReassigned =
-        inputsForm !== this.previousInputsForm || repeatingCheckboxForm !== this.previousRepeatingCheckboxForm;
+        inputsForm !== this.previousInputsForm ||
+        periodicCheckboxForm !== this.previousPeriodicCheckboxForm ||
+        periodicStepForm !== this.previousPeriodicStepForm;
 
       this.previousInputsForm = inputsForm;
-      this.previousRepeatingCheckboxForm = repeatingCheckboxForm;
+      this.previousPeriodicCheckboxForm = periodicCheckboxForm;
+      this.previousPeriodicStepForm = periodicStepForm;
 
       const isInitialValueEchoingLastEmittedValue = untracked(
         () => this.initializationChecklist.initializationDone() !== null && initialValue === this.previousValue,
@@ -300,6 +346,7 @@ export class NgxMatCronSelectComponent {
       }
 
       this.previousActiveCheckboxes = null;
+      this.previousPeriodicCheckedValues = null;
       this.initializationChecklist.settingSymbol.set(Symbol());
     });
 
@@ -308,7 +355,7 @@ export class NgxMatCronSelectComponent {
       this.initializationChecklist.determiningTab.set(this.initializationChecklist.settingSymbol());
     });
 
-    this.registerRepeatingCheckboxesDisable();
+    this.registerPeriodicCheckboxesDisable();
     this.registerInputDisable();
 
     effect(() => {
@@ -332,7 +379,7 @@ export class NgxMatCronSelectComponent {
   private registerInputDisable(): void {
     for (const fieldName of inputFields) {
       effect(() => {
-        if (!untracked(this.isRepeatingCheckboxAvailabilitySettled)) {
+        if (!untracked(this.isPeriodicCheckboxAvailabilitySettled)) {
           return;
         }
 
@@ -342,8 +389,8 @@ export class NgxMatCronSelectComponent {
     }
   }
 
-  private registerRepeatingCheckboxesDisable(): void {
-    for (const fieldName of repeatingCheckboxFields) {
+  private registerPeriodicCheckboxesDisable(): void {
+    for (const fieldName of periodicCheckboxFields) {
       effect(() => {
         if (
           untracked(
@@ -353,8 +400,8 @@ export class NgxMatCronSelectComponent {
           return;
         }
 
-        this.isCheckboxDisabled[fieldName]();
-        this.initializationChecklist.disablingRepeatingCheckbox[fieldName].set(
+        this.isPeriodicCheckboxDisabled[fieldName]();
+        this.initializationChecklist.disablingPeriodicCheckbox[fieldName].set(
           this.initializationChecklist.settingSymbol(),
         );
       });
@@ -365,25 +412,27 @@ export class NgxMatCronSelectComponent {
     const initialValue = this.validateInputCron(this.initialValue());
     const selectedTab = this.selectedTab();
     const inputsForm = this.inputsForm();
-    const repeatingCheckboxForm = this.repeatingCheckboxForm();
+    const periodicCheckboxForm = this.periodicCheckboxForm();
+    const periodicStepForm = this.periodicStepForm();
 
     this.manuallySelectedTab.set(null);
 
     if (initialValue === null) {
       if (!inputsForm().valid()) {
-        this.initializeWithoutStartingValue(inputsForm, repeatingCheckboxForm);
+        this.initializeWithoutStartingValue(inputsForm, periodicCheckboxForm, periodicStepForm);
       }
 
       return;
     }
 
-    this.setFormUsingInitialValue(initialValue, inputsForm, repeatingCheckboxForm, selectedTab);
+    this.setFormUsingInitialValue(initialValue, inputsForm, periodicCheckboxForm, periodicStepForm, selectedTab);
   }
 
   private setFormUsingInitialValue(
     initialValue: string,
     inputsForm: FieldTree<IInputsFormGroup>,
-    repeatingCheckboxForm: FieldTree<IEveryCheckboxesFormGroupValue>,
+    periodicCheckboxForm: FieldTree<IPeriodicCheckboxesFormGroupValue>,
+    periodicStepForm: FieldTree<IPeriodicStepsFormGroupValue>,
     selectedTab: keyof ITab,
   ): void {
     const split = initialValue.split(' ');
@@ -403,19 +452,35 @@ export class NgxMatCronSelectComponent {
         continue;
       }
 
-      const checkboxName = this.getCheckboxName(inputFields[index]);
-      repeatingCheckboxForm[checkboxName]().reset(fieldValue === '*');
+      const checkboxName = this.getPeriodicFieldName(inputFields[index]);
+      const parsed = this.parseWildcardOrStep(fieldValue);
+
+      periodicCheckboxForm[checkboxName]().reset(parsed !== null);
+      periodicStepForm[checkboxName]().reset(parsed?.step ?? 1);
     }
 
-    const shouldCheckboxBeEnabledForDayOfMonth = ['month', 'year'].includes(selectedTab) && dayOfMonth === '*';
-    const shouldCheckboxBeEnabledForDayOfWeek = selectedTab === 'week' && dayOfWeek === '*';
+    const dayOfMonthParsed = this.parseWildcardOrStep(dayOfMonth);
+    const dayOfWeekParsed = this.parseWildcardOrStep(dayOfWeek);
+    const shouldCheckboxBeEnabledForDayOfMonth = ['month', 'year'].includes(selectedTab) && dayOfMonthParsed !== null;
+    const shouldCheckboxBeEnabledForDayOfWeek = selectedTab === 'week' && dayOfWeekParsed !== null;
 
-    repeatingCheckboxForm.day().reset(shouldCheckboxBeEnabledForDayOfMonth || shouldCheckboxBeEnabledForDayOfWeek);
+    periodicCheckboxForm.day().reset(shouldCheckboxBeEnabledForDayOfMonth || shouldCheckboxBeEnabledForDayOfWeek);
+    periodicStepForm
+      .day()
+      .reset(
+        (shouldCheckboxBeEnabledForDayOfMonth
+          ? dayOfMonthParsed
+          : shouldCheckboxBeEnabledForDayOfWeek
+            ? dayOfWeekParsed
+            : null
+        )?.step ?? 1,
+      );
   }
 
   private initializeWithoutStartingValue(
     inputsForm: FieldTree<IInputsFormGroup>,
-    repeatingCheckboxForm: FieldTree<IEveryCheckboxesFormGroupValue>,
+    periodicCheckboxForm: FieldTree<IPeriodicCheckboxesFormGroupValue>,
+    periodicStepForm: FieldTree<IPeriodicStepsFormGroupValue>,
   ): void {
     for (const inputName of ['dayOfMonth', 'dayOfWeek', 'hour', 'minute', 'monthOfYear'] as const) {
       const resetValue = this.getEmptyInputValue(inputName);
@@ -425,11 +490,18 @@ export class NgxMatCronSelectComponent {
       }
     }
 
-    repeatingCheckboxForm().value.set({
+    periodicCheckboxForm().value.set({
       day: false,
       hour: false,
       minute: false,
       monthOfYear: false,
+    });
+
+    periodicStepForm().value.set({
+      day: 1,
+      hour: 1,
+      minute: 1,
+      monthOfYear: 1,
     });
   }
 
@@ -437,7 +509,9 @@ export class NgxMatCronSelectComponent {
     inputValue: string,
     inputName: keyof IInputsFormGroup,
   ): TNmcsValue | undefined {
-    return inputValue === '*' ? this.getEmptyInputValue(inputName) : this.getInputValue(inputName, inputValue);
+    return this.parseWildcardOrStep(inputValue) !== null
+      ? this.getEmptyInputValue(inputName)
+      : this.getInputValue(inputName, inputValue);
   }
 
   private getEmptyInputValue(inputName: keyof IInputsFormGroup): [] | null | undefined {
@@ -497,8 +571,21 @@ export class NgxMatCronSelectComponent {
     return parts.filter((part) => ['day', 'month'].includes(part.type)).map((part) => part.type as 'day' | 'month');
   }
 
-  private getCheckboxName(fieldName: (typeof inputFields)[number]): keyof IEveryCheckboxesFormGroupValue {
+  private getPeriodicFieldName(fieldName: (typeof inputFields)[number]): keyof IPeriodicCheckboxesFormGroupValue {
     return fieldName === 'dayOfMonth' || fieldName === 'dayOfWeek' ? 'day' : fieldName;
+  }
+
+  // Recognizes a cron field value that's either the plain wildcard ('*', step 1) or a step expression ('*' then
+  // a slash then a positive integer). Returns null for anything else (a concrete value or comma-list), which is
+  // treated as a real selection.
+  private parseWildcardOrStep(value: string): { step: number } | null {
+    if (value === '*') {
+      return { step: 1 };
+    }
+
+    const match = /^\*\/([0-9]+)$/.exec(value);
+
+    return match ? { step: Number(match[1]) } : null;
   }
 
   private validateInputCron(value: string | null): string | null {
@@ -513,8 +600,12 @@ export class NgxMatCronSelectComponent {
     }
 
     const isValid = Array.from(inputFields.entries()).every(([index, field]) => {
-      if (split[index] === '*') {
-        return true;
+      const parsed = this.parseWildcardOrStep(split[index]);
+
+      if (parsed !== null) {
+        const [min, max] = inputFieldRanges[field];
+
+        return parsed.step >= 1 && parsed.step <= max - min + 1;
       }
 
       const isMulti = Array.isArray(this.inputsForm()[field]().value());
@@ -610,28 +701,28 @@ export class NgxMatCronSelectComponent {
   private getIsInputDisabled(fieldName: keyof IInputsFormGroup): Signal<boolean> {
     return computed(
       () => {
-        this.isRepeatingCheckboxAvailabilitySettled();
+        this.isPeriodicCheckboxAvailabilitySettled();
         const index = inputFields.indexOf(fieldName);
         const isInputActiveBasedOnTab = this.getActiveInputsBasedOnActiveTab()[index];
 
         return (
           !isInputActiveBasedOnTab ||
           this.isDisabled() ||
-          this.repeatingCheckboxForm()[this.getCheckboxName(fieldName)]().value()
+          this.periodicCheckboxForm()[this.getPeriodicFieldName(fieldName)]().value()
         );
       },
       { equal: () => false },
     );
   }
 
-  private getIsRepeatingCheckboxDisabled(fieldName: keyof IEveryCheckboxesFormGroupValue): Signal<boolean> {
+  private getIsPeriodicCheckboxDisabled(fieldName: keyof IPeriodicCheckboxesFormGroupValue): Signal<boolean> {
     return computed(
       () => {
         this.initializationChecklist.determiningTab();
-        const index = repeatingCheckboxFields.indexOf(fieldName);
+        const index = periodicCheckboxFields.indexOf(fieldName);
         const isCheckboxActiveBasedOnTab = this.getActiveCheckboxesBasedOnActiveTab()[index];
 
-        return !isCheckboxActiveBasedOnTab || this.isDisabled() || !this.repeatingCheckboxesVisibility()[fieldName];
+        return !isCheckboxActiveBasedOnTab || this.isDisabled() || !this.periodicCheckboxesVisibility()[fieldName];
       },
       { equal: () => false },
     );
@@ -640,4 +731,33 @@ export class NgxMatCronSelectComponent {
   private toNumberArray(value: TNmcsValue): number[] {
     return Array.isArray(value) ? value : value === null ? [] : [value];
   }
+
+  private renderDigit(fieldName: keyof IInputsFormGroup, index: number): string | number {
+    const periodicCheckboxValue = this.periodicCheckboxForm()().controlValue();
+    const activeCheckboxes = this.getActiveCheckboxesBasedOnActiveTab();
+    const activeInputs = this.getActiveInputsBasedOnActiveTab();
+    const checkboxName = this.getPeriodicFieldName(fieldName);
+
+    if (!activeInputs[index]) {
+      return '*';
+    }
+
+    const formValues = Object.fromEntries(
+      inputFields.map((fieldName) => [fieldName, this.inputsForm()[fieldName]().value()]),
+    ) as unknown as IInputsFormGroup;
+
+    if (activeCheckboxes[periodicCheckboxFields.indexOf(checkboxName)] && periodicCheckboxValue[checkboxName]) {
+      return this.renderPeriodicField(checkboxName);
+    }
+
+    return Array.isArray(formValues[fieldName])
+      ? [...formValues[fieldName]].sort((a, b) => a - b).join(',')
+      : formValues[fieldName]!;
+  }
+
+  private renderPeriodicField = (fieldName: keyof IPeriodicCheckboxesFormGroupValue): string => {
+    const step = this.periodicStepForm()().controlValue()[fieldName];
+
+    return step > 1 ? `*/${step}` : '*';
+  };
 }

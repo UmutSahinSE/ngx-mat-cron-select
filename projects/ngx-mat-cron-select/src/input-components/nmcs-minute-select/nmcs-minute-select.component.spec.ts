@@ -14,10 +14,14 @@ function createFixture<FormControlValue extends number[] | number | null>(
     TestBed.runInInjectionContext(() => form(signal(fieldValue))),
   );
   fixture.componentRef.setInput(
-    'checkboxFieldTree',
+    'periodicCheckboxFieldTree',
     TestBed.runInInjectionContext(() => form(signal(false))),
   );
-  fixture.componentRef.setInput('isCheckboxVisible', true);
+  fixture.componentRef.setInput(
+    'periodicStepFieldTree',
+    TestBed.runInInjectionContext(() => form(signal(1))),
+  );
+  fixture.componentRef.setInput('isPeriodicCheckboxVisible', true);
   fixture.detectChanges();
 
   return fixture;
@@ -25,6 +29,10 @@ function createFixture<FormControlValue extends number[] | number | null>(
 
 function minuteOptionsOf(component: NmcsMinuteSelectComponent<number[]>): number[] {
   return (component as unknown as { minuteOptions: number[] }).minuteOptions;
+}
+
+function stepOptionsOf(component: NmcsMinuteSelectComponent<number[]>): number[] {
+  return (component as unknown as { stepOptions: number[] }).stepOptions;
 }
 
 describe('NmcsMinuteSelectComponent', () => {
@@ -50,5 +58,11 @@ describe('NmcsMinuteSelectComponent', () => {
     const fixture = createFixture<number | null>(null);
 
     expect(fixture.componentInstance.isMultiselect()).toBeFalse();
+  });
+
+  it('exposes step options 1 through 60, matching the number of minute options', () => {
+    const fixture = createFixture<number[]>([]);
+
+    expect(stepOptionsOf(fixture.componentInstance)).toEqual(Array.from({ length: 60 }, (_, index) => index + 1));
   });
 });

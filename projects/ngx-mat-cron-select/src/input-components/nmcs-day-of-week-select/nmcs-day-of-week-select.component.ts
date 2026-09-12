@@ -40,11 +40,16 @@ export class NmcsDayOfWeekSelectComponent<FormControlValue extends TNmcsValue> {
   private readonly weekFormat = inject(NGX_MAT_CRON_SELECT_WEEK_FORMAT, { optional: true });
 
   public readonly field = input.required<Field<FormControlValue>>();
-  public readonly checkboxFieldTree = input.required<FieldTree<boolean> | null>();
-  public readonly isCheckboxVisible = input.required<boolean>();
+  public readonly periodicCheckboxFieldTree = input.required<FieldTree<boolean> | null>();
+  public readonly periodicStepFieldTree = input.required<FieldTree<number> | null>();
+  public readonly isPeriodicCheckboxVisible = input.required<boolean>();
   public readonly isMultiselect = computed(() => Array.isArray(this.field()().value()));
 
   protected readonly options = this.prepareOrderedOptions();
+
+  protected readonly stepOptions = Array(7)
+    .fill(null)
+    .map((_, index) => index + 1);
 
   private prepareOrderedOptions(): { cronValue: number; label: string }[] {
     const locale = this.matDateLocale ?? 'en-US';
