@@ -1,6 +1,6 @@
 {
   "name": "ngx-mat-cron-select",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "scripts": {
     "pack": "rm -rf dist/ngx-mat-cron-select && ng build && cd dist/ngx-mat-cron-select && npm pack",
     "test": "ng test",
