@@ -367,6 +367,8 @@ export class NgxMatCronSelectComponent {
     const inputsForm = this.inputsForm();
     const repeatingCheckboxForm = this.repeatingCheckboxForm();
 
+    this.manuallySelectedTab.set(null);
+
     if (initialValue === null) {
       if (!inputsForm().valid()) {
         this.initializeWithoutStartingValue(inputsForm, repeatingCheckboxForm);

@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "pack": "rm -rf dist/ngx-mat-cron-select && ng build && cd dist/ngx-mat-cron-select && npm pack",
-    "test": "ng test"
+    "test": "ng test",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless"
   },
   "private": true,
   "dependencies": {
